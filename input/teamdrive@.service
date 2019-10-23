@@ -1,0 +1,58 @@
+#########################################################################
+# Title:         Rclone VFS Service                                     #
+# Location:      /etc/systemd/system/rclone_vfs_primer.timer            #
+# Author(s):     desimaniac, Horjulf, davemaster223, RXWatcher          #
+                                                                        #
+#                                                                       #
+#########################################################################
+#                   GNU General Public License v3.0                     #
+#########################################################################
+#########################################################################
+
+[Unit]
+Description=Rclone VFS
+# Depend on network
+After=network-online.target
+# Check directories
+
+[Service]
+Type=notify
+
+User=max
+Group=max
+
+# Mount command
+EnvironmentFile=/opt/sharedrives/%i.conf
+ExecStartPre=-/usr/bin/sudo /bin/mkdir -p $DESTINATION_DIR
+ExecStartPre=-/usr/bin/sudo /bin/chmod -R 775 $DESTINATION_DIR
+ExecStartPre=-/usr/bin/sudo /bin/chown -R max:max $DESTINATION_DIR
+ExecStart=/usr/bin/rclone mount \
+  --config=/home/max/.config/rclone/rclone.conf \
+  --allow-other \
+  --fast-list \
+  --rc \
+  --rc-addr=localhost:${RCLONE_RC_PORT} \
+  --drive-skip-gdocs \
+  --vfs-read-chunk-size=64M \
+  --vfs-read-chunk-size-limit=2048M \
+  --buffer-size=64M \
+  --max-read-ahead=256M \
+  --poll-interval=1m \
+  --dir-cache-time=72h \
+  --timeout=10m \
+  --transfers=16 \
+  --checkers=8 \
+  --drive-chunk-size=64M \
+  --umask=002 \
+  --syslog \
+  $SOURCE_REMOTE $DESTINATION_DIR
+
+# Unmount on stop
+ExecStop=/bin/umount -l $DESTINATION_DIR
+Restart=on-abort
+RestartSec=5
+StartLimitInterval=60s
+StartLimitBurst=3
+
+[Install]
+WantedBy=default.target
