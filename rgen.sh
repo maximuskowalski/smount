@@ -13,7 +13,7 @@ get_sa_count () {
 make_rc_sa_config () {
   for set_file in $@; do echo Set file is $set_file
     column -t $SET_DIR/$set_file|sed '/^\s*#.*$/d'|\
-    while IFS=' ' read -r name driveid src;do
+    while IFS=' ' read -r name driveid;do
       get_sa_count
 rcsaconf="
 [$name]
@@ -31,7 +31,7 @@ service_account_file = "$sadir"/$count.json
 make_client_id_config () {
   for set_file in $@; do echo Set file is $set_file
     column -t $SET_DIR/$set_file|sed '/^\s*#.*$/d'|\
-    while IFS=' ' read -r name driveid src;do
+    while IFS=' ' read -r name driveid;do
       cidconf="
 [$name]
 type = drive
