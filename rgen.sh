@@ -1,5 +1,5 @@
 #!/bin/bash
-SET_DIR=~/zenmounts/sets
+SET_DIR=~/smount/sets
 client_id=somebody.apps.googleusercontent.com
 client_secret=eleventyseven
 sadir="/opt/sa"

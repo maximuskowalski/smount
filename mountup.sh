@@ -2,7 +2,7 @@
 echo -e "Starting mountup.sh"
 USER=max #user name goes here
 GROUP=max #group name goes here
-SET_DIR=~/zenmounts/sets
+SET_DIR=~/smount/sets
 # Make Work Dirs
 sudo mkdir -p /opt/sharedrives
 sudo chown -R $USER:$GROUP /opt/sharedrives
