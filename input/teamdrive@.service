@@ -10,7 +10,7 @@
 #########################################################################
 
 [Unit]
-Description=Rclone VFS
+Description=rclone VFS
 # Depend on network
 After=network-online.target
 # Check directories

@@ -10,7 +10,7 @@
 #########################################################################
 
 [Unit]
-Description=Wildhare TV Primer - Timer
+Description=sharedrive Primer - Timer
 
 [Timer]
 OnUnitInactiveSec=167h

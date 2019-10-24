@@ -10,7 +10,7 @@
 #########################################################################
 
 [Unit]
-Description=Wildhare %i Primer - Service
+Description=sharedrive %i primer - service
 Requires=teamdrive@%i.service
 After=teamdrive@%i.service
 
