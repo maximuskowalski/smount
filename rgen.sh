@@ -2,7 +2,7 @@
 SET_DIR=~/smount/sets
 client_id=somebody.apps.googleusercontent.com
 client_secret=eleventyseven
-sadir="/opt/sa"
+sadir="/opt/mountsa"
 token={"access_token":"ya"}
 
 get_sa_count () {
@@ -11,28 +11,20 @@ get_sa_count () {
 }
 
 make_rc_sa_config () {
-  for set_file in $@; do echo Set file is $set_file
-    column -t $SET_DIR/$set_file|sed '/^\s*#.*$/d'|\
-    while IFS=' ' read -r name driveid;do
-      get_sa_count
-rcsaconf="
+  sed '/^\s*#.*$/d' $SET_DIR/$1|\
+  while read -r name driveid;do echo'
 [$name]
 type = drive
 scope = drive
 server_side_across_configs = true
 team_drive = $driveid
 service_account_file = "$sadir"/$count.json
-";
-      echo "$rcsaconf" >>rc_sa.config
-    done
-  done
-}
+'>>rc_sa.config
+  done; }
 
 make_client_id_config () {
-  for set_file in $@; do echo Set file is $set_file
-    column -t $SET_DIR/$set_file|sed '/^\s*#.*$/d'|\
-    while IFS=' ' read -r name driveid;do
-      cidconf="
+  sed '/^\s*#.*$/d' $SET_DIR/$1|\
+  while read -r name driveid;do echo'
 [$name]
 type = drive
 scope = drive
@@ -41,11 +33,8 @@ team_drive = $driveid
 client_id = $client_id
 client_secret = $client_secret
 token = $token 
-";
-      echo "$cidconf" >>rc_cid.config
-    done
-  done
-}
+'>>rc_cid.config
+  done; }
 
-make_rc_sa_config $@
-make_client_id_config $@
+make_rc_sa_config $1
+make_client_id_config $1
