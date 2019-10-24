@@ -18,12 +18,12 @@ After=teamdrive@%i.service
 
 [Service]
 EnvironmentFile=/opt/sharedrives/%i.conf
-User=max
-Group=max
+User=$user
+Group=$group
 Type=oneshot
 ExecStartPre=/bin/sleep 10
 ExecStart=/usr/bin/rclone \
-  --config /home/max/.config/rclone/rclone.conf \
+  --config /home/$user/.config/rclone/rclone.conf \
   --timeout=1h \
   -vvv \
   --rc-addr=localhost:${RCLONE_RC_PORT} \

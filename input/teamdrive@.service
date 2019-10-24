@@ -2,7 +2,7 @@
 # Title:         Rclone VFS Service                                     #
 # Location:      /etc/systemd/system/rclone_vfs_primer.timer            #
 # Author(s):     desimaniac, Horjulf, davemaster223, RXWatcher          #
-                                                                        #
+#                                                                       #
 #                                                                       #
 #########################################################################
 #                   GNU General Public License v3.0                     #
@@ -18,16 +18,16 @@ After=network-online.target
 [Service]
 Type=notify
 
-User=max
-Group=max
+User=$user
+Group=$group
 
 # Mount command
 EnvironmentFile=/opt/sharedrives/%i.conf
 ExecStartPre=-/usr/bin/sudo /bin/mkdir -p $DESTINATION_DIR
 ExecStartPre=-/usr/bin/sudo /bin/chmod -R 775 $DESTINATION_DIR
-ExecStartPre=-/usr/bin/sudo /bin/chown -R max:max $DESTINATION_DIR
+ExecStartPre=-/usr/bin/sudo /bin/chown -R $user:$group $DESTINATION_DIR
 ExecStart=/usr/bin/rclone mount \
-  --config=/home/max/.config/rclone/rclone.conf \
+  --config=/home/$user/.config/rclone/rclone.conf \
   --allow-other \
   --fast-list \
   --rc \
