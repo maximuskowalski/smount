@@ -5,7 +5,7 @@ Takes a list of sharedrives and creates rclone VFS mounts.
 
 Rclone config files are generated top copy paste to your rclone config if needed.
 
-**Install**
+**INSTALL**
 
 ```
 git clone https://github.com/maximuskowalski/smount.git
@@ -52,7 +52,7 @@ The name corresponds exactly to the name of a remote listed in in your rclone co
 
 **RCLONE CONFIG**
 
-An rclone config generator tool is included. To use it ;-
+An rclone config generator tool is included. `rgen.sh` To use it ;-
 
 Edit the variables at the top of the script
 ```
@@ -85,7 +85,7 @@ $rclone lsd remote:
 ```
 Will list directories in a single remote to enable auth verification.
 
-**Requirements**
+**REQUIREMENTS**
 
 This script requires rclone, sudo, and passwordless sudo. In a cloudbox environment all this will be in place already.
 
