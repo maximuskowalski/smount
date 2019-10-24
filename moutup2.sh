@@ -40,7 +40,6 @@ make_config () {
       ";
       echo "$conf" > /opt/sharedrives/$name.conf
     done
-  done
 }
 
 make_starter () {
@@ -52,7 +51,6 @@ make_starter () {
     while read -r name other;do
       echo "sudo systemctl start teamdrive@$name.service && sudo systemctl start teamdrive_primer@$name.service">>vfs_starter.sh
     done
-  done
 }
 
 make_vfskill () {
@@ -64,7 +62,6 @@ make_vfskill () {
     while read -r name other;do
       echo "sudo systemctl disable teamdrive@$name.service && sudo systemctl disable teamdrive_primer@$name.service">>vfs_kill.sh
     done
-  done
 }
 
 make_config $1
