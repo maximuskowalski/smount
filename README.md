@@ -47,12 +47,13 @@ You can then edit your mergerfs / unionfs set up if needed.
 An example set file is included in `/smount/sets` the format is
 
 ```
-# 1name          2sharedriveID
+# name           sharedriveID
 td_anime         teamdriveID1
 td_audiobooks    teamdriveID2
 td_ebooks        teamdriveID3
 td_movies        teamdriveID4
 td_tv            teamdriveID5
+#end-of-file
 ```
 
 The name corresponds exactly to the name of a remote listed in in your rclone config file. The sharedrive ID can be found by viewing the sharedrive in the google drive GUI and copy the last part of the URL when you are in the root of the drive. If you do not need to generate an rclone config file you can put any characters in here you like as a placeholder.
@@ -66,12 +67,14 @@ Edit the variables at the top of the script
 SET_DIR=~/smount/sets
 client_id=somebody.apps.googleusercontent.com
 client_secret=eleventyseven
-sadir="/opt/sa"
+sadir="/opt/mountsa"
 token={"access_token":"ya"}
 ```
 If you already have a remote configured you can copy the details from there for a Client Secret Token auth method. Otherwise auth a single remote using `rclone config` and copy the details into the other remotes afterwards.
 
 If you are using service files for your auth just leave the client_id, client_secret, and token as is, you won't need them. Just make sure the path to the service files you wish to use is correct. Service files are expected to be named `1.json`, `2.json`...`57.json` etc. 1 json file will be used for each remote. If you have already used a number of these for existing remotes you may simply edit the `sa.count` file to begin at any number you wish. Each service account can download a maximum of 10 TB per 24 hours so even using the same service account file for each mount is unlikely to be a problem.
+
+For information on creating a series of service accounts see https://github.com/88lex/sa-guide and the tool at https://github.com/88lex/sa-gen .
 
 ```
 chmod +x rgen.sh
