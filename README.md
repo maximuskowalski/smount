@@ -5,14 +5,6 @@ Takes a list of sharedrives and creates rclone VFS mounts.
 
 Rclone config files are generated top copy paste to your rclone config if needed.
 
-This script requires rclone, sudo, and passwordless sudo.
-
-Requires `./etc/fuse.conf` to have
-
-`# Allow non-root users to specify the allow_other or allow_root mount options.`
-
-`user_allow_other`
-
 **Install**
 
 ```
@@ -92,3 +84,13 @@ A simple
 $rclone lsd remote:
 ```
 Will list directories in a single remote to enable auth verification.
+
+**Requirements**
+
+This script requires rclone, sudo, and passwordless sudo. In a cloudbox environment all this will be in place already.
+
+Requires `./etc/fuse.conf` to have
+
+`# Allow non-root users to specify the allow_other or allow_root mount options.`
+
+`user_allow_other`
