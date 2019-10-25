@@ -3,7 +3,7 @@ A sharedrive mounter.
 
 Takes a list of sharedrives and creates rclone VFS mounts.
 
-Rclone config files are generated top copy paste to your rclone config if needed.
+Rclone config files can be generated to copy paste to your rclone config if needed.
 
 **INSTALL**
 
