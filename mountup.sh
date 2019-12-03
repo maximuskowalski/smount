@@ -49,7 +49,14 @@ make_starter () {
     done
     sed '/^\s*#.*$/d' $SET_DIR/$1|\
     while read -r name other;do
-      echo "sudo systemctl start teamdrive@$name.service && sudo systemctl start teamdrive_primer@$name.service">>vfs_starter.sh
+      echo "sudo systemctl start teamdrive@$name.service">>vfs_starter.sh
+    done
+}
+
+make_primer () {
+  sed '/^\s*#.*$/d' $SET_DIR/$1|\
+    while read -r name other;do
+      echo "sudo systemctl start teamdrive_primer@$name.service">>vfs_primer.sh
     done
 }
 
@@ -66,9 +73,11 @@ make_vfskill () {
 
 make_config $1
 make_starter $1
+make_primer $1
 # daemon reload
 sudo systemctl daemon-reload
 make_vfskill $1
-chmod +x vfs_starter.sh
+chmod +x vfs_starter.sh vfs_primer.sh vfs_kill.sh
 ./vfs_starter.sh  #fire the starter
-echo "sharedrive vfs mounts complete"
+nohup sh ./vfs_primer.sh &
+echo "sharedrive vfs mount script complete, it may take time for files to fully populate"
