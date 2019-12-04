@@ -82,5 +82,5 @@ sudo systemctl daemon-reload
 make_vfskill $1
 chmod +x vfs_starter.sh vfs_primer.sh vfs_kill.sh
 ./vfs_starter.sh  #fire the starter
-nohup sh ./vfs_primer.sh &
+nohup sh ./vfs_primer.sh &>/dev/null &
 echo "sharedrive vfs mount script complete, it may take time for files to fully populate"
