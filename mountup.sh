@@ -20,7 +20,10 @@ sudo bash -c 'cp ./output/teamdrive_primer@.timer /etc/systemd/system/teamdrive_
 sudo systemctl enable teamdrive@.service
 sudo systemctl enable teamdrive_primer@.service
 sudo systemctl enable teamdrive_primer@.timer
-#
+#rename existing starter and kill scripts if present
+mv vfs_starter.sh vfs_starter_`date +%Y%m%d%H%M%S`.sh > /dev/null 2>&1
+mv vfs_primer.sh vfs_primer_`date +%Y%m%d%H%M%S`.sh > /dev/null 2>&1
+mv vfs_kill.sh vfs_kill_`date +%Y%m%d%H%M%S`.sh > /dev/null 2>&1
 # Note that port default starting number=5575
 # Read the current port no to be used then increment by +1
 get_port_no_count () {
