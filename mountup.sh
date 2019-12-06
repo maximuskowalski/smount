@@ -20,7 +20,10 @@ sudo bash -c 'cp ./output/teamdrive_primer@.timer /etc/systemd/system/teamdrive_
 sudo systemctl enable teamdrive@.service
 sudo systemctl enable teamdrive_primer@.service
 sudo systemctl enable teamdrive_primer@.timer
-#
+#rename existing starter and kill scripts if present
+mv vfs_starter.sh vfs_starter_`date +%Y%m%d%H%M%S`.sh > /dev/null 2>&1
+mv vfs_primer.sh vfs_primer_`date +%Y%m%d%H%M%S`.sh > /dev/null 2>&1
+mv vfs_kill.sh vfs_kill_`date +%Y%m%d%H%M%S`.sh > /dev/null 2>&1
 # Note that port default starting number=5575
 # Read the current port no to be used then increment by +1
 get_port_no_count () {
@@ -49,7 +52,14 @@ make_starter () {
     done
     sed '/^\s*#.*$/d' $SET_DIR/$1|\
     while read -r name other;do
-      echo "sudo systemctl start teamdrive@$name.service && sudo systemctl start teamdrive_primer@$name.service">>vfs_starter.sh
+      echo "sudo systemctl start teamdrive@$name.service">>vfs_starter.sh
+    done
+}
+
+make_primer () {
+  sed '/^\s*#.*$/d' $SET_DIR/$1|\
+    while read -r name other;do
+      echo "sudo systemctl start teamdrive_primer@$name.service">>vfs_primer.sh
     done
 }
 
@@ -66,9 +76,11 @@ make_vfskill () {
 
 make_config $1
 make_starter $1
+make_primer $1
 # daemon reload
 sudo systemctl daemon-reload
 make_vfskill $1
-chmod +x vfs_starter.sh
+chmod +x vfs_starter.sh vfs_primer.sh vfs_kill.sh
 ./vfs_starter.sh  #fire the starter
-echo "sharedrive vfs mounts complete"
+nohup sh ./vfs_primer.sh &>/dev/null &
+echo "sharedrive vfs mount script complete, it may take time for files to fully populate"
