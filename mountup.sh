@@ -9,7 +9,7 @@ MOUNT_DIR=/mnt/sharedrives # where you want your sharedrives mounted
 
 # OPTIONAL MergerFS Variables 
 # for sample mergerfs service file. 
-# NOT INSTALLED. PLACED in OUTPUT DIR as example only
+# NOT INSTALLED. PLACED in OUTPUT DIR as example only see options below to enable inline
 RW_LOCAL=/mnt/local # read write local dir for merger service
 UMOUNT_DIR=/mnt/sharedrives/td_* # if common prefix used like `td_aerobics_vids', 'td_jazz', then wildcard is possible (td_*)
 MERGER_DIR=/mnt/unionfs # if this is a non empty dir or already in use by another merger service a reboot is recommended.
@@ -25,20 +25,19 @@ envsubst '$user,$group' <./input/teamdrive@.service >./output/teamdrive@.service
 envsubst '$user,$group' <./input/teamdrive_primer@.service >./output/teamdrive_primer@.service
 envsubst '$user,$group' <./input/teamdrive_primer@.timer >./output/teamdrive_primer@.timer
 envsubst '$rw_local,$umount_dir,$merger_dir' <./input/smerger.service >./output/smerger.service
-
-#copynewfiles
 sudo bash -c 'cp ./output/teamdrive@.service /etc/systemd/system/teamdrive@.service'
 sudo bash -c 'cp ./output/teamdrive_primer@.service /etc/systemd/system/teamdrive_primer@.service'
 sudo bash -c 'cp ./output/teamdrive_primer@.timer /etc/systemd/system/teamdrive_primer@.timer'
-#uncomment to copy smerger to /etc/systemd/system
+# uncomment next two lines to copy smerger to /etc/systemd/system and enable
 #sudo bash -c 'cp ./output/smerger.service /etc/systemd/system/smerger.service'
+#sudo systemctl enable smerger.service
 
 # enable new services
 sudo systemctl enable teamdrive@.service
 sudo systemctl enable teamdrive_primer@.service
 sudo systemctl enable teamdrive_primer@.timer
 
-#rename existing starter and kill scripts if present
+# rename existing starter and kill scripts if present
 mv vfs_starter.sh vfs_starter_`date +%Y%m%d%H%M%S`.sh > /dev/null 2>&1
 mv vfs_primer.sh vfs_primer_`date +%Y%m%d%H%M%S`.sh > /dev/null 2>&1
 mv vfs_kill.sh vfs_kill_`date +%Y%m%d%H%M%S`.sh > /dev/null 2>&1
@@ -103,8 +102,10 @@ chmod +x vfs_starter.sh vfs_primer.sh vfs_kill.sh
 ./vfs_starter.sh  #fire the starter
 nohup sh ./vfs_primer.sh &>/dev/null &
 
-# uncomment below line to enable and start smerger.service
-#sudo systemctl enable smerger.service && sudo systemctl start smerger.service
+# Uncomment below line if using cloudbox merger service already and enabling extra merger
+#sudo systemctl stop mergerfs.service
+# uncomment below start smerger.service
+#systemctl start mergerfs.service && sudo systemctl start smerger.service
 
 echo "sharedrive vfs mount script complete, it may take time for files to fully populate"
 #eof
