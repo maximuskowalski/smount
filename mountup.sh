@@ -28,6 +28,7 @@ envsubst '$rw_local,$umount_dir,$merger_dir' <./input/smerger.service >./output/
 sudo bash -c 'cp ./output/teamdrive@.service /etc/systemd/system/teamdrive@.service'
 sudo bash -c 'cp ./output/teamdrive_primer@.service /etc/systemd/system/teamdrive_primer@.service'
 sudo bash -c 'cp ./output/teamdrive_primer@.timer /etc/systemd/system/teamdrive_primer@.timer'
+
 # uncomment next two lines to copy smerger to /etc/systemd/system and enable
 #sudo bash -c 'cp ./output/smerger.service /etc/systemd/system/smerger.service'
 #sudo systemctl enable smerger.service
@@ -104,6 +105,7 @@ nohup sh ./vfs_primer.sh &>/dev/null &
 
 # Uncomment below line if using cloudbox merger service already and enabling extra merger
 #sudo systemctl stop mergerfs.service
+
 # uncomment below start smerger.service
 #systemctl start mergerfs.service && sudo systemctl start smerger.service
 
