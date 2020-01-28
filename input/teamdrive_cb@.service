@@ -28,17 +28,23 @@ ExecStartPre=-/usr/bin/sudo /bin/chmod -R 775 $DESTINATION_DIR
 ExecStartPre=-/usr/bin/sudo /bin/chown -R $user:$group $DESTINATION_DIR
 ExecStart=/usr/bin/rclone mount \
   --config=/home/$user/.config/rclone/rclone.conf \
-  --user-agent='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.131 Safari/537.36' \
   --allow-other \
   --fast-list \
   --rc \
   --rc-addr=localhost:${RCLONE_RC_PORT} \
   --drive-skip-gdocs \
+  --vfs-read-chunk-size=64M \
+  --vfs-read-chunk-size-limit=2048M \
+  --buffer-size=64M \
+  --max-read-ahead=256M \
+  --poll-interval=1m \
   --dir-cache-time=72h \
   --timeout=10m \
+  --transfers=16 \
+  --checkers=8 \
+  --drive-chunk-size=64M \
   --umask=002 \
   --syslog \
-  -v \
   $SOURCE_REMOTE $DESTINATION_DIR
 
 # Unmount on stop
