@@ -11,7 +11,9 @@ Develop branch has custom mount paths and a mergerfs service file generator, see
 ## Support on Beerpay
 Hey dude! Help me out for a couple of :beers:!
 
+https://github.com/sponsors/maximuskowalski
+
 [![Buy me a coffee][buymeacoffee-shield]][buymeacoffee]
 
 [buymeacoffee-shield]: https://www.buymeacoffee.com/assets/img/guidelines/download-assets-sm-2.svg
-[buymeacoffee]: https://www.buymeacoffee.com/MaxKowalski
+[buymeacoffee]: https://github.com/sponsors/maximuskowalski
