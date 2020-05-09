@@ -8,7 +8,7 @@ For installation see [Wiki](https://github.com/maximuskowalski/smount/wiki/Insta
 
 Develop branch has custom mount paths and a mergerfs service file generator, see [trapexit/mergerfs](https://github.com/trapexit/mergerfs) for installation if needed.
 
-## Support on Beerpay
+## Support on ~~Beerpay~~ Github Sponsors
 Hey dude! Help me out for a couple of :beers:!
 
 https://github.com/sponsors/maximuskowalski
