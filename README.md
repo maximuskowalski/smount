@@ -1,4 +1,4 @@
-A sharedrive mounter.
+A sharedrive mounter for the cultured clouder.
 
 Takes a list of sharedrives and creates rclone VFS mounts.
 
