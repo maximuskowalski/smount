@@ -1,0 +1,52 @@
+####################################################################
+# Title:         Rclone Stream VFS Service                         #
+# Author(s):     desimaniac, Horjulf, davemaster223, RXWatcher     #
+#                                                                  #
+####################################################################
+#                GNU General Public License v3.0                   #
+####################################################################
+
+[Unit]
+Description=rclone strm VFS
+# Depend on network
+After=network-online.target
+
+[Service]
+Type=notify
+
+User=$user
+Group=$group
+
+# Mount command
+EnvironmentFile=/opt/smount/sharedrives/%i.conf
+ExecStartPre=-/usr/bin/sudo /bin/mkdir -p $DESTINATION_DIR
+ExecStartPre=-/usr/bin/sudo /bin/chmod -R 775 $DESTINATION_DIR
+ExecStartPre=-/usr/bin/sudo /bin/chown -R $user:$group $DESTINATION_DIR
+ExecStart=/opt/crop/rclone_gclone mount \
+  --config=/opt/smount/config/smount.conf \
+  --user-agent='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.131 Safari/537.36' \
+  --allow-other \
+  --drive-skip-gdocs \
+  --fast-list \
+  --rc \
+  --rc-no-auth \
+  --use-mmap \
+  --rc-addr=localhost:${RCLONE_RC_PORT} \
+  --drive-service-account-file-path=${SA_PATH} \
+  --dir-cache-time=168h \
+  --timeout=10m \
+  --vfs-cache-max-age=24h \
+  --vfs-cache-mode=writes \
+  --umask=002 \
+  --syslog \
+  -v \
+  $SOURCE_REMOTE $DESTINATION_DIR
+# Unmount on stop
+ExecStop=/bin/umount -l $DESTINATION_DIR
+Restart=on-abort
+RestartSec=5
+StartLimitInterval=60s
+StartLimitBurst=3
+
+[Install]
+WantedBy=default.target

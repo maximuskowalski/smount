@@ -1,0 +1,28 @@
+#####################################################
+# Title:         Rclone VFS Primer - Service        #
+# Author(s):     EnorMOZ                            #
+#                                                   #
+#####################################################
+#                GNU General Public License v3.0    #
+#####################################################
+
+[Unit]
+Description=sharedrive %i primer - service
+Requires=$mstyle@%i.service
+After=teamdrive@%i.service
+
+[Service]
+EnvironmentFile=/opt/smount/sharedrives/%i.conf
+User=$user
+Group=$group
+Type=oneshot
+ExecStartPre=/bin/sleep 10
+ExecStart=/opt/crop/rclone_gclone \
+  --config=/opt/smount/config/smount.conf
+  --timeout=1h \
+  -vvv \
+  --rc-addr=localhost:${RCLONE_RC_PORT} \
+  rc vfs/refresh
+
+[Install]
+WantedBy=default.target

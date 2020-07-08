@@ -1,0 +1,19 @@
+###############################################################
+# Title:         Rclone VFS Primer - Timer                    #
+# Author(s):     desimaniac, Horjulf                          #
+#                                                             #
+###############################################################
+#                GNU General Public License v3.0              #
+###############################################################
+
+[Unit]
+Description=sharedrive Primer - Timer
+
+[Timer]
+OnUnitInactiveSec=167h
+
+[Install]
+WantedBy=timers.target
+[Service]
+User=$user
+Group=$group

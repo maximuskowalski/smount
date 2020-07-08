@@ -1,4 +1,5 @@
 **/backup
-**/sets
-sa.count
-port_no.count
+#sa.count
+#port_no.count
+**/.vscode
+*.set
