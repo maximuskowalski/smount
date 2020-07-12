@@ -32,11 +32,10 @@ ExecStart=/opt/crop/rclone_gclone mount \
   --rc-no-auth \
   --use-mmap \
   --rc-addr=localhost:${RCLONE_RC_PORT} \
-  --drive-service-account-file-path=${SA_PATH} \
   --dir-cache-time=168h \
   --timeout=10m \
   --vfs-cache-max-age=24h \
-  --vfs-cache-mode=writes \
+  --vfs-cache-mode=full \
   --umask=002 \
   --syslog \
   -v \
