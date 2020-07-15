@@ -10,8 +10,8 @@ ExecStart=/usr/bin/mergerfs \
   -o dropcacheonclose=true,xattr=nosys \
   -o statfs_ignore=ro,use_ino,umask=0002,noatime \
   -o async_read=false,cache.files=partial \
-  $rw_local=RW:$umount_dir=NC $merger_dir
-ExecStop=/bin/fusermount -u $merger_dir
+  ${myrwmdir}=RW:${myromdir}=NC ${mymdir}
+ExecStop=/bin/fusermount -u ${mymdir}
 
 [Install]
 WantedBy=default.target
