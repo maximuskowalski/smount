@@ -169,8 +169,8 @@ mv ${MSTYLE}.restart.sh ./backup/${MSTYLE}.restart`date +%Y%m%d%H%M%S`.sh > /dev
 # sudo systemctl enable ${MSTYLE}.primer@.service
 # sudo systemctl enable ${MSTYLE}.primer@.timer
 
-# Function calls
-${MSTYLE}  $1
+# Function calls # 
+${MSTYLE} $1
 make_shmount.conf $1
 make_config $1
 make_starter $1
