@@ -15,5 +15,5 @@ OnUnitInactiveSec=167h
 [Install]
 WantedBy=timers.target
 [Service]
-User=$user
-Group=$group
+User=${myuser}
+Group=${mygroup}
