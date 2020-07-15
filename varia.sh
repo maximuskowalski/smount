@@ -1,10 +1,20 @@
 #!/usr/bin/env bash
 set -euo pipefail
 # VARIABLES
+# User/Group Information
+# readonly DETECTED_PUID=${SUDO_UID:-$UID}
+# readonly DETECTED_UNAME=$(id -un "${DETECTED_PUID}" 2> /dev/null || true)
+# readonly DETECTED_PGID=$(id -g "${DETECTED_PUID}" 2> /dev/null || true)
+# export DETECTED_PGID
+# readonly DETECTED_UGROUP=$(id -gn "${DETECTED_PUID}" 2> /dev/null || true)
+# export DETECTED_UGROUP
+# readonly DETECTED_HOMEDIR=$(eval echo "~${DETECTED_UNAME}" 2> /dev/null || true)
+
+
 USER=max # user name
 GROUP=max # group name
-SET_DIR=/opt/smount/sets/ # set file dir [ REMOVE VARIABLE ]
-SA_PATH=/opt/smount/sa # sharedrive mounting service accounts [ NO TRAILING SLASH ]
+SET_DIR="./sets/" # set file dir [ REMOVE VARIABLE ]
+SA_PATH=/opt/sa/mounts # sharedrive mounting service accounts [ NO TRAILING SLASH ]
 MOUNT_DIR=/mnt/sharedrives # sharedrive mount [ NO TRAILING SLASH ]
 MSTYLE=aio # OPTIONS: aio,strm,csd,cst [ All-In-One | Streamer | Cloudseed | Custom ] (Simplify while we work out VARIABLES)
 
@@ -80,7 +90,7 @@ make_config () {
       DESTINATION_DIR=$MOUNT_DIR/$name/
       SA_PATH=$SA_PATH/
       ";
-      echo "$conf" > /opt/smount/sharedrives/$name.conf
+      echo "$conf" > "./sharedrives/$name.conf"
     done
 }
 
@@ -97,7 +107,7 @@ server_side_across_configs = true
 team_drive = $driveid
 service_account_file = "$SA_PATH/$sacount.json"
 service_account_file_path = $SA_PATH
-">> /opt/smount/config/smount.conf
+">> "./config/smount.conf"
   done; }
 
 # Move outputs to a scripts directory to clean up.

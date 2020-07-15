@@ -13,11 +13,11 @@ After=teamdrive@%i.service
 
 [Service]
 EnvironmentFile=/opt/smount/sharedrives/%i.conf
-User=$user
-Group=$group
+User=${myuser}
+Group=${mygroup}
 Type=oneshot
 ExecStartPre=/bin/sleep 10
-ExecStart=/opt/crop/rclone_gclone \
+ExecStart=${mybinary} \
   --config=/opt/smount/config/smount.conf
   --timeout=1h \
   -vvv \
