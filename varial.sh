@@ -61,10 +61,10 @@ get_sa_count () {
 aio () {
   # create
   export myuser=${USER} mygroup=${GROUP} mysapath=${SA_PATH} mystyle=${MSTYLE} mycname=${CNAME} mybinary=${BINARY} myrwmdir=${RW_MDIR} myromdir=${RO_MDIR} mymdir=${MDIR}   mymergerservice=${MERGERSERVICE}
-  envsubst '${myuser},${mygroup},${mysapath},${mybinary}' <./input/aio@.service >./output/aio@.service
-  envsubst '${myuser},${mygroup}' <./input/primer@.service >./output/aio.primer@.service
-  envsubst '${myuser},${mygroup},${MSTYLE}' <./input/primer@.timer >./output/aio.primer@.timer
-  envsubst '${myrwmdir},${myromdir},${mymdir}' <./input/smerger.service >./output/aio.merger.service
+  envsubst "${myuser},${mygroup},${mysapath},${mybinary}" <./input/aio@.service >./output/aio@.service
+  envsubst "${myuser},${mygroup}" <./input/primer@.service >./output/aio.primer@.service
+  envsubst "${myuser},${mygroup},${MSTYLE}" <./input/primer@.timer >./output/aio.primer@.timer
+  envsubst "${myrwmdir},${myromdir},${mymdir}" <./input/smerger.service >./output/aio.merger.service
   # place
   sudo bash -c 'cp ./output/aio@.service /etc/systemd/system/aio@.service'
   sudo bash -c 'cp ./output/aio.primer@.service /etc/systemd/system/aio.primer@.service'
@@ -77,10 +77,10 @@ aio () {
 
 cst () {
   # create
-  envsubst '${myuser},${mygroup},${my_sa_path},${mybinary}' <./input/cst@.service >./output/${CNAME}@.service
-  envsubst '${myuser},${mygroup}' <./input/primer@.service >./output/${CNAME}.primer@.service
-  envsubst '${myuser},${mygroup},${MSTYLE}' <./input/primer@.timer >./output/${CNAME}.primer@.timer
-  envsubst '${myrwmdir},${myromdir},${mymdir}' <./input/smerger.service >./output/${CNAME}.merger.service
+  envsubst "${myuser},${mygroup},${mysapath},${mybinary}" <./input/cst@.service >./output/${CNAME}@.service
+  envsubst "${myuser},${mygroup}" <./input/primer@.service >./output/${CNAME}.primer@.service
+  envsubst "${myuser},${mygroup},${MSTYLE}" <./input/primer@.timer >./output/${CNAME}.primer@.timer
+  envsubst "${myrwmdir},${myromdir},${mymdir}" <./input/smerger.service >./output/${CNAME}.merger.service
   # place
   sudo bash -c 'cp ./output/cst@.service /etc/systemd/system/${CNAME}@.service'
   sudo bash -c 'cp ./output/cst.primer@.service /etc/systemd/system/${CNAME}.primer@.service'
@@ -92,7 +92,7 @@ cst () {
 }
 
 make_config () {
-  sed '/^\s*#.*$/d' $SET_DIR/$1|\
+  sed '/^\s*#.*$/d' $SET_DIR/"$1"|\
     while read -r name other;do
       get_port_no_count
       conf="
@@ -107,7 +107,7 @@ make_config () {
 
 # We want to make this check for and read an exisiting file and check if sharedtive [${name}] is already configured - if so maybe edit the existing config or maybe spit out warnings at the end about double config entries.
 make_shmount.conf () {
-  sed '/^\s*#.*$/d' ${SET_DIR}/$1|\
+  sed '/^\s*#.*$/d' ${SET_DIR}/"$1"|\
   while read -r name driveid;do 
   get_sa_count
   echo "
@@ -116,7 +116,7 @@ type = drive
 scope = drive
 server_side_across_configs = true
 team_drive = ${driveid}
-service_account_file = "${SA_PATH}/${sacount}.json"
+service_account_file = "${SA_PATH}/"${sacount}".json"
 service_account_file_path = ${SA_PATH}
 ">> "./config/smount.conf"
   done; 
@@ -125,11 +125,11 @@ service_account_file_path = ${SA_PATH}
 # Move outputs to a scripts directory to clean up.
 # We should make this check for an exisiting file - do we overwrite or append?
 make_starter () {
-  sed '/^\s*#.*$/d' $SET_DIR/$1|\
+  sed '/^\s*#.*$/d' $SET_DIR/"$1"|\
     while read -r name other;do
       echo "sudo systemctl enable ${MSTYLE}@${name}.service && sudo systemctl enable ${MSTYLE}.primer@${name}.service">>${MSTYLE}.starter.sh
     done
-    sed '/^\s*#.*$/d' $SET_DIR/$1|\
+    sed '/^\s*#.*$/d' $SET_DIR/"$1"|\
     while read -r name other;do
       echo "sudo systemctl start ${MSTYLE}@${name}.service">>${MSTYLE}.starter.sh
     done
@@ -137,7 +137,7 @@ make_starter () {
 
 # We should make this check for an exisiting file - do we overwrite or append?
 make_restart () {
-  sed '/^\s*#.*$/d' $SET_DIR/$1|\
+  sed '/^\s*#.*$/d' $SET_DIR/"$1"|\
     while read -r name other;do
       echo "sudo systemctl restart ${MSTYLE}@${name}.service">>${MSTYLE}.restart.sh
     done
@@ -145,7 +145,7 @@ make_restart () {
 
 # We should make this check for an exisiting file - do we overwrite or append?
 make_primer () {
-  sed '/^\s*#.*$/d' $SET_DIR/$1|\
+  sed '/^\s*#.*$/d' $SET_DIR/"$1"|\
     while read -r name other;do
       echo "sudo systemctl start ${MSTYLE}.primer@${name}.service">>${MSTYLE}.primer.sh
     done
@@ -153,7 +153,7 @@ make_primer () {
 
 # We should make this check for an exisiting file - do we overwrite or append?
 make_vfskill () {
-  sed '/^\s*#.*$/d' $SET_DIR/$1|\
+  sed '/^\s*#.*$/d' $SET_DIR/"$1"|\
     while read -r name other;do
       echo "sudo systemctl stop ${MSTYLE}@${name}.service && sudo systemctl stop ${MSTYLE}.primer@${name}.service">>${MSTYLE}.kill.sh
     done
@@ -167,7 +167,7 @@ make_vfskill () {
 
 # Make Dirs
 sudo mkdir -p /opt/smount/sharedrives /opt/smount/backup /opt/smount/scripts /opt/smount/config /opt/smount/output
-sudo chown -R ${USER}:${GROUP} /opt/smount/sharedrives /opt/smount/backup /opt/smount/scripts /opt/smount/config /opt/smount/output
+sudo chown -R $USER:$GROUP /opt/smount/sharedrives /opt/smount/backup /opt/smount/scripts /opt/smount/config /opt/smount/output
 sudo chmod -R 775 /opt/smount/sharedrives /opt/smount/backup /opt/smount/scripts /opt/smount/config /opt/smount/output
 
 # rename existing starter and kill scripts if present can we make CNAME = MSTYLE for making scripts and moving?
@@ -183,13 +183,13 @@ mv ${MSTYLE}.restart.sh ./backup/${MSTYLE}.restart`date +%Y%m%d%H%M%S`.sh > /dev
 
 # Function calls # 
 export_vars
-${MSTYLE} $1
-make_shmount.conf $1
-make_config $1
-make_starter $1
-make_primer $1
-make_vfskill $1
-make_restart $1
+${MSTYLE} "$1"
+make_shmount.conf "$1"
+make_config "$1"
+make_starter "$1"
+make_primer "$1"
+make_vfskill "$1"
+make_restart "$1"
 
 # daemon reload
 #sudo systemctl daemon-reload
