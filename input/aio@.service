@@ -19,9 +19,9 @@ Group=${mygroup}
 
 # Mount command
 EnvironmentFile=/opt/smount/sharedrives/%i.conf
-ExecStartPre=-/usr/bin/sudo /bin/mkdir -p $DESTINATION_DIR
-ExecStartPre=-/usr/bin/sudo /bin/chmod -R 775 $DESTINATION_DIR
-ExecStartPre=-/usr/bin/sudo /bin/chown -R ${myuser}:${mygroup} $DESTINATION_DIR
+ExecStartPre=-/usr/bin/sudo /bin/mkdir -p ${DESTINATION_DIR}
+ExecStartPre=-/usr/bin/sudo /bin/chmod -R 775 ${DESTINATION_DIR}
+ExecStartPre=-/usr/bin/sudo /bin/chown -R ${myuser}:${mygroup} ${DESTINATION_DIR}
 ExecStart=${mybinary} mount \
   --config=/opt/smount/config/smount.conf \
   --user-agent='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.131 Safari/537.36' \
@@ -37,9 +37,9 @@ ExecStart=${mybinary} mount \
   --umask=002 \
   --syslog \
   -v \
-  $SOURCE_REMOTE $DESTINATION_DIR
+  ${SOURCE_REMOTE} ${DESTINATION_DIR}
 # Unmount on stop
-ExecStop=/bin/umount -l $DESTINATION_DIR
+ExecStop=/bin/umount -l ${DESTINATION_DIR}
 Restart=on-abort
 RestartSec=5
 StartLimitInterval=60s
