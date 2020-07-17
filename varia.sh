@@ -1,66 +1,45 @@
 #!/bin/bash
-#set -euo pipefail
 set -e
+
 # VARIABLES
-# User/Group Information
-# readonly DETECTED_PUID=${SUDO_UID:-$UID}
-# readonly DETECTED_UNAME=$(id -un "${DETECTED_PUID}" 2> /dev/null || true)
-# readonly DETECTED_PGID=$(id -g "${DETECTED_PUID}" 2> /dev/null || true)
-# export DETECTED_PGID
-# readonly DETECTED_UGROUP=$(id -gn "${DETECTED_PUID}" 2> /dev/null || true)
-# export DETECTED_UGROUP
-# readonly DETECTED_HOMEDIR=$(eval echo "~${DETECTED_UNAME}" 2> /dev/null || true)
+USER=max
+GROUP=max
+SET_DIR="./sets/"
+SA_PATH=/opt/sa/mounts
+MOUNT_DIR=/mnt/sharedrives
+MSTYLE=aio
+BINARY=/usr/bin/rclone
+RW_MDIR='/mnt/local'
+RO_MDIR='/mnt/sharedrives/sd*'
+SECNDRO_MDIR='/mnt/sharedrives/td*'
+MDIR='/mnt/mergerfs'
+MERGERSERVICE=shmerger
+CNAME=shmount
+MPORT=5575
+CPORT=1
 
+# FUNCTIONS
 
-USER=max # user name
-GROUP=max # group name
-SET_DIR="./sets/" # set file dir [ REMOVE VARIABLE / USER HOME? ]
-SA_PATH=/opt/sa/mounts # sharedrive mounting service accounts [ NO TRAILING SLASH ]
-MOUNT_DIR=/mnt/sharedrives # sharedrive mount [ NO TRAILING SLASH ]
-MSTYLE=aio # OPTIONS: aio,strm,csd,cst [ All-In-One | Streamer | Cloudseed | Custom ] (Simplify while we work out VARIABLES) Could introduce check for rclone version re vfscache comaptibility. Gets confusing with gclone or rclone_gclone
-BINARY=/usr/bin/rclone # full path of rclone binary to use.
-
-# TESTING
-
-# MergerFS Variables - add switch to make live, not just example file.
-# We can check if mergerfs is installed for this and halt with errorchecks.
-# /usr/bin/mergerfs
-RW_MDIR='/mnt/local' # read write dir for merger
-RO_MDIR='/mnt/sharedrives/sd*' # if common prefix wildcard is possible (sd_* = sd_tv sd_movies) usually drive names in set file
-# 2NDRO_MDIR='/mnt/sharedrives/td*' #IF none then dont use [LOOK UP HOW TO]
-MDIR='/mnt/mergerfs' # if this is a non empty dir or already in use by another merger service a reboot is required.
-MERGERSERVICE=shmerger # The name of your sharedrive merger service [not working]
-CNAME=shmount # The name of your new custom share mount service [not working]
-# MPORT=5575 # Starting port count for VFS mount
-
-
-# Try universal export - see if able to not export for env substitute - possibly universal pull from input and export with ${MSTYLE}
-
-export_vars () {
-  export myuser=${USER} mygroup=${GROUP} mysapath=${SA_PATH} mystyle=${MSTYLE} mycname=${CNAME} mybinary=${BINARY} myrwmdir=${RW_MDIR} myromdir=${RO_MDIR} mymdir=${MDIR}   mymergerservice=${MERGERSERVICE}
+check_firstrun () {
+  ( [ -e "sa.count" ] || echo ${CPORT} > "sa.count" )
+  ( [ -e "port_no.count" ] || echo ${MPORT} > "port_no.count" )
 }
 
-# count fuctions
-
-# Add a check for existing file, if none then create and assign '5575' or a new ${VAR}. Then we can ignore our existing counters and not break with a git pull.
+export_vars () {
+  export myuser=${USER} mygroup=${GROUP} mysapath=${SA_PATH} mystyle=${MSTYLE} mycname=${CNAME} mybinary=${BINARY} myrwmdir=${RW_MDIR} myromdir=${RO_MDIR} mymdir=${MDIR} mymergerservice=${MERGERSERVICE}
+}
 
 get_port_no_count () {
   read count < port_no.count
   echo $(( count + 1 )) > port_no.count
 }
 
-# Add a check for existing file, if none then create and assign '1' or a new ${VAR}, do not let it create and be 0. Maybe we can do this with maths. It might even be possible to read a random .json file from a supplied dir. This would allow for non numeric names, non sequential names.
-
 get_sa_count () {
   read sacount < sa.count
   echo $(( sacount + 1 )) > sa.count
 }
 
-## mount functions export make universal. No need to repeat five times.
-
 aio () {
-  # create
-  export myuser=${USER} mygroup=${GROUP} mysapath=${SA_PATH} mystyle=${MSTYLE} mycname=${CNAME} mybinary=${BINARY} myrwmdir=${RW_MDIR} myromdir=${RO_MDIR} mymdir=${MDIR}   mymergerservice=${MERGERSERVICE}
   envsubst '${myuser},${mygroup},${mysapath},${mybinary}' <./input/aio@.service >./output/aio@.service
   envsubst '${myuser},${mygroup}' <./input/primer@.service >./output/aio.primer@.service
   envsubst '${myuser},${mygroup},${MSTYLE}' <./input/primer@.timer >./output/aio.primer@.timer
@@ -105,7 +84,6 @@ make_config () {
     done
 }
 
-# We want to make this check for and read an exisiting file and check if sharedtive [${name}] is already configured - if so maybe edit the existing config or maybe spit out warnings at the end about double config entries.
 make_shmount.conf () {
   sed '/^\s*#.*$/d' ${SET_DIR}/$1|\
   while read -r name driveid;do 
@@ -122,8 +100,6 @@ service_account_file_path = ${SA_PATH}
   done; 
 }
 
-# Move outputs to a scripts directory to clean up.
-# We should make this check for an exisiting file - do we overwrite or append?
 make_starter () {
   sed '/^\s*#.*$/d' $SET_DIR/$1|\
     while read -r name other;do
@@ -135,7 +111,6 @@ make_starter () {
     done
 }
 
-# We should make this check for an exisiting file - do we overwrite or append?
 make_restart () {
   sed '/^\s*#.*$/d' $SET_DIR/$1|\
     while read -r name other;do
@@ -143,7 +118,6 @@ make_restart () {
     done
 }
 
-# We should make this check for an exisiting file - do we overwrite or append?
 make_primer () {
   sed '/^\s*#.*$/d' $SET_DIR/$1|\
     while read -r name other;do
@@ -151,7 +125,6 @@ make_primer () {
     done
 }
 
-# We should make this check for an exisiting file - do we overwrite or append?
 make_vfskill () {
   sed '/^\s*#.*$/d' $SET_DIR/$1|\
     while read -r name other;do
@@ -163,25 +136,27 @@ make_vfskill () {
     done
 }
 
-
-
 # Make Dirs
 sudo mkdir -p /opt/smount/sharedrives /opt/smount/backup /opt/smount/scripts /opt/smount/config /opt/smount/output
 sudo chown -R ${USER}:${GROUP} /opt/smount/sharedrives /opt/smount/backup /opt/smount/scripts /opt/smount/config /opt/smount/output
 sudo chmod -R 775 /opt/smount/sharedrives /opt/smount/backup /opt/smount/scripts /opt/smount/config /opt/smount/output
 
 # rename existing starter and kill scripts if present can we make CNAME = MSTYLE for making scripts and moving?
-mv ${MSTYLE}.starter.sh ./backup/${MSTYLE}.starter`date +%Y%m%d%H%M%S`.sh > /dev/null 2>&1
-mv ${MSTYLE}.primer.sh ./backup/${MSTYLE}.primer`date +%Y%m%d%H%M%S`.sh > /dev/null 2>&1
-mv ${MSTYLE}.kill.sh ./backup/${MSTYLE}.kill`date +%Y%m%d%H%M%S`.sh > /dev/null 2>&1
-mv ${MSTYLE}.restart.sh ./backup/${MSTYLE}.restart`date +%Y%m%d%H%M%S`.sh > /dev/null 2>&1
-
+#   ( [ -e "sa.count" ] || echo ${CPORT} > "sa.count" )
+make_backups () {
+( [ -e "${MSTYLE}.starter.sh" ] && mv ${MSTYLE}.starter.sh ./backup/${MSTYLE}.starter`date +%Y%m%d%H%M%S`.sh > /dev/null 2>&1 )
+( [ -e "${MSTYLE}.primer.sh" ] && mv ${MSTYLE}.primer.sh ./backup/${MSTYLE}.primer`date +%Y%m%d%H%M%S`.sh )
+( [ -e "${MSTYLE}.kill.sh" ] && mv ${MSTYLE}.kill.sh ./backup/${MSTYLE}.kill`date +%Y%m%d%H%M%S`.sh )
+( [ -e "${MSTYLE}.restart.sh" ] && mv ${MSTYLE}.restart.sh ./backup/${MSTYLE}.restart`date +%Y%m%d%H%M%S`.sh )
+}
 # enable new services TEST LATER if we can pull it out of the mount functions and condense to this
 # sudo systemctl enable ${MSTYLE}@.service
 # sudo systemctl enable ${MSTYLE}.primer@.service
 # sudo systemctl enable ${MSTYLE}.primer@.timer
 
 # Function calls # 
+check_firstrun
+make_backups
 export_vars
 ${MSTYLE} $1
 make_shmount.conf $1
