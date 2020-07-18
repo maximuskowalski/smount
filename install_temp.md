@@ -6,13 +6,13 @@ This will change completely so perhaps reconsider installing for anything other 
 Clone repo, develop branch
 
 ```
-git clone https://github.com/maximuskowalski/smount.git --branch develop && cd smount
+git clone https://github.com/maximuskowalski/smount.git --branch alpha && cd smount
 ```
 
 Use `mount.sh` for this version. Make executable, set variables.
 
 Also grab latest rclone_gclone from l3udzz and place as /opt/crop/rclone_gclone amd make +x
-https://gofile.io/d/wXiPWT   Note - wget will not work, download via browser and upload.
+https://gofile.io/d/wXiPWT Note - wget will not work, download via browser and upload.
 
 ```
 # VARIABLES
@@ -27,7 +27,7 @@ BINARY=/opt/crop/rclone_gclone # rclone or gclone binary to use   THIS DOES NOT 
 
 ```
 
-User & group, Service account path and MSTYLE is necessary. 
+User & group, Service account path and MSTYLE is necessary.
 
 BINARY is not a proper variable yet so you will need to place the `rclone_gclone` in `/opt/crop/` and make executable. Or wherever else I have it now.
 Can be downloaded from here currently. https://gofile.io/d/D6jKeL You will need to download on a PC and upload, wget fails to pull file properly.
