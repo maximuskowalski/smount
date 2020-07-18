@@ -1,20 +1,19 @@
 #!/usr/bin/env bash
-set -e
-
+#set -e
 USER=max
 GROUP=max
 INSPTH=/opt/smount
-SET_DIR=/opt/smountsets/
+SET_DIR=/opt/smount/sets/
 SA_PATH=/opt/sa/mounts
 MOUNT_DIR=/mnt/sharedrives
 MSTYLE=aio 
-BINARY=/usr/bin/rclone
+BINARY=/usr/bin/rclone #/usr/bin/rclone #/opt/crop/rclone_gclone
 RW_MDIR='/mnt/local'
 RO_MDIR='/mnt/sharedrives/sd*'
 SECNDRO_MDIR='/mnt/sharedrives/td*'
 MDIR='/mnt/mergerfs'
-MERGERSERVICE=shmerger
-CNAME=shmount
+MERGERSERVICE=anus
+CNAME=anus
 MPORT=5575
 CPORT=1
 
@@ -42,32 +41,31 @@ aio () {
   envsubst '${myuser},${mygroup},${mybinary},${mystyle},${myinspth}' <${INSPTH}/input/primer@.service >${INSPTH}/output/aio.primer@.service
   envsubst '${myuser},${mygroup},${mystyle}' <${INSPTH}/input/primer@.timer >${INSPTH}/output/aio.primer@.timer
   envsubst '${myrwmdir},${myromdir},${mymdir},${myscndromdir}' <${INSPTH}/input/smerger.service >${INSPTH}/output/aio.merger.service
-  # place
-  sudo bash -c 'cp ${INSPTH}/output/aio@.service /etc/systemd/system/aio@.service'
-  sudo bash -c 'cp ${INSPTH}/output/aio.primer@.service /etc/systemd/system/aio.primer@.service'
-  sudo bash -c 'cp ${INSPTH}/output/aio.primer@.timer /etc/systemd/system/aio.primer@.timer'
-  # enable
+
+  sudo cp ${INSPTH}/output/aio@.service /etc/systemd/system/
+  sudo cp ${INSPTH}/output/aio.primer@.service /etc/systemd/system/
+  sudo cp ${INSPTH}/output/aio.primer@.timer /etc/systemd/system/
+
   sudo systemctl enable aio@.service
   sudo systemctl enable aio.primer@.service
   sudo systemctl enable aio.primer@.timer
 }
 
 cst () {
-   export MSTYLE=${CNAME},mystyle=${CNAME}
-  # create
+  export MSTYLE=${CNAME}
+
   envsubst '${myuser},${mygroup},${mysapath},${mybinary},${myinspth},${mycname}' <${INSPTH}/input/cst@.service >${INSPTH}/output/${CNAME}@.service
   envsubst '${myuser},${mygroup},${mybinary},${mystyle},${myinspth},${mycname}' <${INSPTH}/input/cst.primer@.service >${INSPTH}/output/${CNAME}.primer@.service
   envsubst '${myuser},${mygroup}' <${INSPTH}/input/primer@.timer >${INSPTH}/output/${CNAME}.primer@.timer
   envsubst '${myrwmdir},${myromdir},${mymdir},${myscndromdir}' <${INSPTH}/input/smerger.service >${INSPTH}/output/${CNAME}.merger.service
-  # place
-  sudo bash -c 'cp ${INSPTH}/output/${CNAME}@.service /etc/systemd/system/${CNAME}@.service'
-  sudo bash -c 'cp ${INSPTH}/output/${CNAME}.primer@.service@.service /etc/systemd/system/${CNAME}.primer@.service'
-  sudo bash -c 'cp ${INSPTH}/output/${CNAME}.primer@.timer /etc/systemd/system/${CNAME}.primer@.timer'
-  # enable
+
+  sudo cp ${INSPTH}/output/${CNAME}@.service /etc/systemd/system/
+  sudo cp ${INSPTH}/output/${CNAME}.primer@.service /etc/systemd/system/
+  sudo cp ${INSPTH}/output/${CNAME}.primer@.timer /etc/systemd/system/
+
   sudo systemctl enable ${CNAME}@.service
   sudo systemctl enable ${CNAME}.primer@.service
   sudo systemctl enable ${CNAME}.primer@.timer
-  # need to fix starters to cname not mstyle and backups.
 }
 
 make_config () {
@@ -143,23 +141,34 @@ sudo chmod -R 775 ${INSPTH}/{sharedrives,backup,scripts,config,output}
 
 # rename existing starter and kill scripts if present can we make CNAME = MSTYLE for making scripts and moving?
 make_backups () {
-( [ -e "${INSPTH}/scripts/${MSTYLE}.starter.sh" ] && mv "${INSPTH}/scripts/${MSTYLE}.starter.sh" ${INSPTH}/backup/${MSTYLE}.starter`date +%Y%m%d%H%M%S`.sh )
-( [ -e "${INSPTH}/scripts/${MSTYLE}.primer.sh" ] && mv "${INSPTH}/scripts/${MSTYLE}.primer.sh" ${INSPTH}/backup/${MSTYLE}.primer`date +%Y%m%d%H%M%S`.sh )
-( [ -e "${INSPTH}/scripts/${MSTYLE}.kill.sh" ] && mv "${INSPTH}/scripts/${MSTYLE}.kill.sh" ${INSPTH}/backup/${MSTYLE}.kill`date +%Y%m%d%H%M%S`.sh )
-( [ -e "${INSPTH}/scripts/${MSTYLE}.restart.sh" ] && mv "${INSPTH}/scripts/${MSTYLE}.restart.sh" ${INSPTH}/backup/${MSTYLE}.restart`date +%Y%m%d%H%M%S`.sh )
-( [ -e "${INSPTH}/config/smount.conf" ] && cp "${INSPTH}/config/smount.conf" ${INSPTH}/backup/smount`date +%Y%m%d%H%M%S`.conf )
+( [ -e "${INSPTH}/scripts/${MSTYLE}.starter.sh" ] && mv "${INSPTH}/scripts/${MSTYLE}.starter.sh" ${INSPTH}/backup/${MSTYLE}.starter`date +%Y%m%d%H%M%S`.sh ) > /dev/null 2>&1
+( [ -e "${INSPTH}/scripts/${MSTYLE}.primer.sh" ] && mv "${INSPTH}/scripts/${MSTYLE}.primer.sh" ${INSPTH}/backup/${MSTYLE}.primer`date +%Y%m%d%H%M%S`.sh ) > /dev/null 2>&1
+( [ -e "${INSPTH}/scripts/${MSTYLE}.kill.sh" ] && mv "${INSPTH}/scripts/${MSTYLE}.kill.sh" ${INSPTH}/backup/${MSTYLE}.kill`date +%Y%m%d%H%M%S`.sh ) > /dev/null 2>&1
+( [ -e "${INSPTH}/scripts/${MSTYLE}.restart.sh" ] && mv "${INSPTH}/scripts/${MSTYLE}.restart.sh" ${INSPTH}/backup/${MSTYLE}.restart`date +%Y%m%d%H%M%S`.sh ) > /dev/null 2>&1
+( [ -e "${INSPTH}/config/smount.conf" ] && cp "${INSPTH}/config/smount.conf" ${INSPTH}/backup/smount`date +%Y%m%d%H%M%S`.conf ) > /dev/null 2>&1
 }
 
+
 # enable new services TEST LATER if we can pull it out of the mount functions and condense to this
-# sudo systemctl enable ${MSTYLE}@.service
-# sudo systemctl enable ${MSTYLE}.primer@.service
-# sudo systemctl enable ${MSTYLE}.primer@.timer
+enabler () {
+  sudo systemctl enable ${MSTYLE}@.service
+  sudo systemctl enable ${MSTYLE}.primer@.service
+  sudo systemctl enable ${MSTYLE}.primer@.timer
+}
 
 # Function calls # 
 check_firstrun
 export_vars
 ${MSTYLE} $1
-make_backups #after mstyle export
+
+mv ${INSPTH}/scripts/${MSTYLE}.starter.sh ${INSPTH}/backup/${MSTYLE}.starter`date +%Y%m%d%H%M%S`.sh > /dev/null 2>&1
+mv ${INSPTH}/scripts/${MSTYLE}.primer.sh ${INSPTH}/backup/${MSTYLE}.primer`date +%Y%m%d%H%M%S`.sh > /dev/null 2>&1
+mv ${INSPTH}/scripts/${MSTYLE}.kill.sh ${INSPTH}/backup/${MSTYLE}.kill`date +%Y%m%d%H%M%S`.sh > /dev/null 2>&1
+mv ${INSPTH}/scripts/${MSTYLE}.restart.sh ${INSPTH}/backup/${MSTYLE}.restart`date +%Y%m%d%H%M%S`.sh > /dev/null 2>&1
+mv ${INSPTH}/config/smount.conf ${INSPTH}/backup/smount.`date +%Y%m%d%H%M%S`.conf > /dev/null 2>&1
+#enabler
+#make_backups
+echo "backup ok"
 make_shmount.conf $1
 make_config $1
 make_starter $1
@@ -168,13 +177,13 @@ make_vfskill $1
 make_restart $1
 
 # daemon reload
-#sudo systemctl daemon-reload
+sudo systemctl daemon-reload
 # permissions
-chmod +x ${INSPTH}/scripts/*.sh
+chmod +x ${INSPTH}/scripts/$MSTYLE.starter.sh ${INSPTH}/scripts/$MSTYLE.primer.sh ${INSPTH}/scripts/$MSTYLE.kill.sh ${INSPTH}/scripts/$MSTYLE.restart.sh
 # fire the starter
-#${INSPTH}/scripts/${MSTYLE}.starter.sh  
+${INSPTH}/scripts/${MSTYLE}.starter.sh  
 # fire the primer but hide it so we dont get bored waiting.
-#nohup sh ${INSPTH}/scripts/${MSTYLE}.primer.sh &>/dev/null &
+nohup sh ${INSPTH}/scripts/${MSTYLE}.primer.sh &>/dev/null &
 # consider echo ${WARNINGS} if present.
 echo "${MSTYLE} mount script completed."
 #eof

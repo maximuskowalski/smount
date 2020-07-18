@@ -32,7 +32,6 @@ ExecStart=${mybinary} mount \
   --rc-no-auth \
   --use-mmap \
   --rc-addr=localhost:${RCLONE_RC_PORT} \
-  --service-account-file-path=${SA_PATH} \
   --dir-cache-time=168h \
   --poll-interval=30s \
   --timeout=10m \
