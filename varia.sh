@@ -53,7 +53,7 @@ aio () {
 }
 
 cst () {
-   export mystyle=${CNAME}
+   export MSTYLE=${CNAME},mystyle=${CNAME}
   # create
   envsubst '${myuser},${mygroup},${mysapath},${mybinary},${myinspth},${mycname}' <./input/cst@.service >./output/${CNAME}@.service
   envsubst '${myuser},${mygroup},${mybinary},${mystyle},${myinspth},${mycname}' <./input/cst.primer@.service >./output/${CNAME}.primer@.service
@@ -136,15 +136,14 @@ make_vfskill () {
     done
 }
 
-# Make Dirs
+# Make Dirs and permissions
 sudo mkdir -p ./{sharedrives,backup,scripts,config,output}
 sudo chown -R ${USER}:${GROUP} ./{sharedrives,backup,scripts,config,output}
 sudo chmod -R 775 ./{sharedrives,backup,scripts,config,output}
 
 # rename existing starter and kill scripts if present can we make CNAME = MSTYLE for making scripts and moving?
-#   ( [ -e "sa.count" ] || echo ${CPORT} > "sa.count" )
 make_backups () {
-( [ -e "./scripts/${MSTYLE}.starter.sh" ] && mv "./scripts/${MSTYLE}.starter.sh" ./backup/${MSTYLE}.starter`date +%Y%m%d%H%M%S`.sh > /dev/null 2>&1 )
+( [ -e "./scripts/${MSTYLE}.starter.sh" ] && mv "./scripts/${MSTYLE}.starter.sh" ./backup/${MSTYLE}.starter`date +%Y%m%d%H%M%S`.sh )
 ( [ -e "./scripts/${MSTYLE}.primer.sh" ] && mv "./scripts/${MSTYLE}.primer.sh" ./backup/${MSTYLE}.primer`date +%Y%m%d%H%M%S`.sh )
 ( [ -e "./scripts/${MSTYLE}.kill.sh" ] && mv "./scripts/${MSTYLE}.kill.sh" ./backup/${MSTYLE}.kill`date +%Y%m%d%H%M%S`.sh )
 ( [ -e "./scripts/${MSTYLE}.restart.sh" ] && mv "./scripts/${MSTYLE}.restart.sh" ./backup/${MSTYLE}.restart`date +%Y%m%d%H%M%S`.sh )
@@ -171,7 +170,7 @@ make_restart $1
 # daemon reload
 #sudo systemctl daemon-reload
 # permissions
-#chmod +x ./scripts/${MSTYLE}.starter.sh ./scripts/${MSTYLE}.primer.sh ./scripts/${MSTYLE}.kill.sh ./scripts/${MSTYLE}.restart.sh
+chmod +x ./scripts/*.sh
 # fire the starter
 #./scripts/${MSTYLE}.starter.sh  
 # fire the primer but hide it so we dont get bored waiting.
