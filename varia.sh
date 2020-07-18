@@ -1,6 +1,6 @@
 #!/bin/bash
 set -e
-# VARIABLES
+
 USER=max
 GROUP=max
 INSPTH=/opt/smount
@@ -17,8 +17,6 @@ MERGERSERVICE=shmerger
 CNAME=shmount
 MPORT=5575
 CPORT=1
-
-# FUNCTIONS
 
 check_firstrun () {
   ( [ -e "sa.count" ] || echo ${CPORT} > "sa.count" )
@@ -55,19 +53,21 @@ aio () {
 }
 
 cst () {
+   export mystyle=${CNAME}
   # create
-  envsubst '${myuser},${mygroup},${my_sa_path},${mybinary}' <./input/cst@.service >./output/${CNAME}@.service
-  envsubst '${myuser},${mygroup}' <./input/primer@.service >./output/${CNAME}.primer@.service
-  envsubst '${myuser},${mygroup},${MSTYLE}' <./input/primer@.timer >./output/${CNAME}.primer@.timer
-  envsubst '${myrwmdir},${myromdir},${mymdir}' <./input/smerger.service >./output/${CNAME}.merger.service
+  envsubst '${myuser},${mygroup},${mysapath},${mybinary},${myinspth},${mycname}' <./input/cst@.service >./output/${CNAME}@.service
+  envsubst '${myuser},${mygroup},${mybinary},${mystyle},${myinspth},${mycname}' <./input/cst.primer@.service >./output/${CNAME}.primer@.service
+  envsubst '${myuser},${mygroup}' <./input/primer@.timer >./output/${CNAME}.primer@.timer
+  envsubst '${myrwmdir},${myromdir},${mymdir},${myscndromdir}' <./input/smerger.service >./output/${CNAME}.merger.service
   # place
-  sudo bash -c 'cp ./output/cst@.service /etc/systemd/system/${CNAME}@.service'
-  sudo bash -c 'cp ./output/cst.primer@.service /etc/systemd/system/${CNAME}.primer@.service'
-  sudo bash -c 'cp ./output/cst.primer@.timer /etc/systemd/system/${CNAME}.primer@.timer'
+  sudo bash -c 'cp ./output/${CNAME}@.service /etc/systemd/system/${CNAME}@.service'
+  sudo bash -c 'cp ./output/${CNAME}.primer@.service@.service /etc/systemd/system/${CNAME}.primer@.service'
+  sudo bash -c 'cp ./output/${CNAME}.primer@.timer /etc/systemd/system/${CNAME}.primer@.timer'
   # enable
   sudo systemctl enable ${CNAME}@.service
   sudo systemctl enable ${CNAME}.primer@.service
   sudo systemctl enable ${CNAME}.primer@.timer
+  # need to fix starters to cname not mstyle and backups.
 }
 
 make_config () {
@@ -159,9 +159,9 @@ make_backups () {
 
 # Function calls # 
 check_firstrun
-make_backups
 export_vars
 ${MSTYLE} $1
+make_backups #after mstyle export
 make_shmount.conf $1
 make_config $1
 make_starter $1
@@ -172,11 +172,11 @@ make_restart $1
 # daemon reload
 #sudo systemctl daemon-reload
 # permissions
-#chmod +x ${MSTYLE}.starter.sh ${MSTYLE}.primer.sh ${MSTYLE}.kill.sh ${MSTYLE}.restart.sh
+#chmod +x ./scripts/${MSTYLE}.starter.sh ./scripts/${MSTYLE}.primer.sh ./scripts/${MSTYLE}.kill.sh ./scripts/${MSTYLE}.restart.sh
 # fire the starter
-#./${MSTYLE}.starter.sh  
+#./scripts/${MSTYLE}.starter.sh  
 # fire the primer but hide it so we dont get bored waiting.
-#nohup sh ./${MSTYLE}.primer.sh &>/dev/null &
+#nohup sh ./scripts/${MSTYLE}.primer.sh &>/dev/null &
 # consider echo ${WARNINGS} if present.
 echo "${MSTYLE} mount script completed."
 #eof
