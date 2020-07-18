@@ -137,7 +137,6 @@ make_vfskill () {
 }
 
 # Make Dirs
-mkdir ./{sharedrives,backup,scripts,config,output}
 sudo mkdir -p ./{sharedrives,backup,scripts,config,output}
 sudo chown -R ${USER}:${GROUP} ./{sharedrives,backup,scripts,config,output}
 sudo chmod -R 775 ./{sharedrives,backup,scripts,config,output}
