@@ -8,8 +8,8 @@
 
 [Unit]
 Description=sharedrive %i primer - service
-Requires=${mystyle}@%i.service
-After=${mystyle}@%i.service
+Requires=${mycname}@%i.service
+After=${mycname}@%i.service
 
 [Service]
 EnvironmentFile=${myinspth}/sharedrives/%i.conf
