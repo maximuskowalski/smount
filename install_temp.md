@@ -8,7 +8,7 @@ Be sure to make it executable: `chmod +x rclone_gclone`
 ### Install 
 1) Change to your install dir and git clone:
 `cd /opt`
-`git clone https://github.com/maximuskowalski/smount.git --branch alpha && cd smount`
+`git clone https://github.com/maximuskowalski/smount.git --branch develop && cd smount`
 
 2) Make the `shmount.sh` file executable:
 `chmod +x shmount.sh`  
@@ -40,7 +40,7 @@ MERGERSERVICE=shmerge # name of your merger service
 
 ```
 
-It does not use rclone.conf but builds a config on the fly. This file will be added to only at present, not replaced or edited by the script so if you run the same set because of error you will end up with double ups of mounts. Auth is only by the service account oyou have in the config file. 
+It does not use rclone.conf but builds a config on the fly. This file will be added to only at present, not replaced or edited by the script so if you run the same set because of error you will end up with double ups of mount configs. Auth is only by the service account method for now. If you have only 10 service accounts and run this fifty times you might want to manually edit afterwards, there is not currently a stop or max .json in place. 
 
 ### Make Setfiles
 Copy the sample set before editing: 
@@ -60,6 +60,7 @@ Run the script with the set for your mountstyle.
 
 If you want to add a cloudseed mount or a strm only mount edit variable MSTYLE for those and run again with set for new mounts.
 
+`MSTYLE=csd`
 `./mount.sh csd.set`
 
 Mergerfs will be created in ./output but will not be installed, use as example for your own editing pleasures.
