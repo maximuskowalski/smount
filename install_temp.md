@@ -2,7 +2,8 @@
 _This is an alpha release and it will change completely.  Perhaps reconsider installing this for anything other than a test, as you may lose stuff. You have been warned._
 
 ### Recommended
-Grab the latest rclone_gclone from l3uddz: https://transfer.cloudbox.media/nnVvn/rclone_gclone_v1.52-DEV  
+Grab the latest rclone_gclone from l3uddz: 
+https://transfer.cloudbox.media/nnVvn/rclone_gclone_v1.52-DEV  
 Be sure to make it executable: `chmod +x rclone_gclone`
 
 ### Install 
@@ -40,27 +41,28 @@ MERGERSERVICE=shmerge # name of your merger service
 
 ```
 
-It does not use rclone.conf but builds a config on the fly. This file will be added to only at present, not replaced or edited by the script so if you run the same set because of error you will end up with double ups of mount configs. Auth is only by the service account method for now. If you have only 10 service accounts and run this fifty times you might want to manually edit afterwards, there is not currently a stop or max .json in place. 
+#### Things to Note
+1) It does not use rclone.conf but builds a config on the fly. And this special config will be added to every time you run this script -- it does not replace or edit the contents.  This means if you run the same set multiple times (perhaps because of error) you will end up with multiples of the same mount configs. 
+2) Auth is only by the service account method for now. If you have only 10 service accounts and run this fifty times you might want to manually edit afterwards, there is not currently a stop for max .json in place. 
 
 ### Make Setfiles
-Copy the sample set before editing: 
-`cp /opt/smount/sets/aiosample.set /opt/smount/sets/aio.set`
-and/or
-`cp /opt/smount/sets/sets/aiosample.set /opt/smount/sets/csd.set`
-`cp /opt/smount/sets/aiosample.set /opt/smount/sets/strm.set`
-`cp /opt/smount/sets/aiosample.set /opt/smount/sets/ezekiel.set`
+Copy the sample set before editing:  
+`cp /opt/smount/sets/aiosample.set /opt/smount/sets/aio.set`  
+and/or  
+`cp /opt/smount/sets/sets/aiosample.set /opt/smount/sets/csd.set`  
+`cp /opt/smount/sets/aiosample.set /opt/smount/sets/strm.set`  
+`cp /opt/smount/sets/aiosample.set /opt/smount/sets/ezekiel.set`  
 
-Edit your sets using nano or however you prefer and save.
-`nano ~/smount/sets/ezekiel.set`
+Edit your sets using nano or however you prefer and save.  
+`nano ~/smount/sets/ezekiel.set` 
 
 ### Run
 Run the script with the set for your mountstyle.
 
 `./mount.sh aio.set`
 
-If you want to add a cloudseed mount or a strm only mount edit variable MSTYLE for those and run again with set for new mounts.
+If you want to add a cloudseed mount or a strm only mount edit variable MSTYLE `MSTYLE=csd` for those and run again with set for new mounts.
 
-`MSTYLE=csd`
 `./mount.sh csd.set`
 
 Mergerfs will be created in ./output but will not be installed, use as example for your own editing pleasures.
@@ -125,5 +127,5 @@ CST MOUNT SETIINGS
 #######################
 Choose your own
 Edit ./input cst@.service with your preferred settings.
-You  could make as many different custom mount setups as your system can cope with by running successively with different settings.
+You  could make as many different custom mount setups as your system can cope with by running successively with different settings applied to `./input cst@.service` each time.
 ```
