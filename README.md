@@ -2,8 +2,8 @@ A sharedrive mounter.
 
 Takes a list of sharedrives and creates rclone VFS mounts.
 
-# Temporary install instructions
-_This is an alpha release and it will change completely.  Perhaps reconsider installing this for anything other than a test, as you may lose stuff. You have been warned._
+# Develop Branch Install Instructions
+_This is an ~~alpha~~ beta release and it will change.  Perhaps reconsider installing this for anything other than a test, as you may lose stuff. You have been warned._
 
 ### Recommended
 Grab the latest rclone_gclone from l3uddz: 
