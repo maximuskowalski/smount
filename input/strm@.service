@@ -36,7 +36,8 @@ ExecStart=${mybinary} mount \
   --timeout=10m \
   --vfs-cache-max-age=24h \
   --vfs-cache-mode=writes \
-  --vfs-cache-max-size=200G \
+  --vfs-cache-poll-interval=30s \
+  --vfs-cache-max-size=100G \
   --umask=002 \
   --syslog \
   -v \
