@@ -8,7 +8,7 @@ Change to your install dir and git clone, eg
 git clone https://github.com/maximuskowalski/smount.git --branch alpha && cd smount
 ```
 
-Use `shmount.sh` for this version. Make executable `chmod +x shmount.sh` until I learn how to preset this for you, set variables `nano shmount.sh`.
+Use `shmount.sh` for this version. Make executable `chmod +x shmount.sh` (until I learn how to preset this for you), set variables `nano shmount.sh`.
 
 Also grab the latest rclone_gclone from l3udzz and make +x if you wish to use rclone_gclone mounts, currently :-
 https://transfer.cloudbox.media/nnVvn/rclone_gclone_v1.52-DEV
