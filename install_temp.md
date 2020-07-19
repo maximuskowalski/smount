@@ -1,18 +1,20 @@
-Temporary install instructions....
-This will change completely so perhaps reconsider installing for anything other than a test. You might wipe some stuff out you do not want wiped.
+# Temporary install instructions
+_This is an alpha release and it will change completely.  Perhaps reconsider installing this for anything other than a test, as you may lose stuff. You have been warned._
 
-Change to your install dir and git clone, eg
+### Recommended
+Grab the latest rclone_gclone from l3uddz: https://transfer.cloudbox.media/nnVvn/rclone_gclone_v1.52-DEV  
+Be sure to make it executable: `chmod +x rclone_gclone`
+
+### Install 
+1) Change to your install dir and git clone:
 `cd /opt`
+`git clone https://github.com/maximuskowalski/smount.git --branch alpha && cd smount`
 
-```
-git clone https://github.com/maximuskowalski/smount.git --branch develop && cd smount
-```
+2) Make the `shmount.sh` file executable:
+`chmod +x shmount.sh`  
 
-Use `shmount.sh` for this version. Make executable `chmod +x shmount.sh` (until I learn how to preset this for you), set variables `nano shmount.sh`.
-
-Also grab the latest rclone_gclone from l3udzz and make +x if you wish to use rclone_gclone mounts, currently :-
-https://transfer.cloudbox.media/nnVvn/rclone_gclone_v1.52-DEV
-Note - if wget will ot work then download via browser and upload.
+3) Open the file and set your variables 
+`nano shmount.sh`
 
 ```
 # VARIABLES
@@ -38,9 +40,10 @@ MERGERSERVICE=shmerge # name of your merger service
 
 ```
 
-It does not use rclone.conf but builds a conf on the fly - this file will be added to only at present, not replaced or edited by the script so if you run the same set because of error you will end up with double ups of mounts. Auth is done by service aqccount only, service account in config file
+It does not use rclone.conf but builds a config on the fly. This file will be added to only at present, not replaced or edited by the script so if you run the same set because of error you will end up with double ups of mounts. Auth is only by the service account oyou have in the config file. 
 
-Make Setfiles
+### Make Setfiles
+Copy the sample set before editing: 
 `cp /opt/smount/sets/aiosample.set /opt/smount/sets/aio.set`
 and/or
 `cp /opt/smount/sets/sets/aiosample.set /opt/smount/sets/csd.set`
@@ -50,6 +53,7 @@ and/or
 Edit your sets using nano or however you prefer and save.
 `nano ~/smount/sets/ezekiel.set`
 
+### Run
 Run the script with the set for your mountstyle.
 
 `./mount.sh aio.set`
@@ -60,6 +64,7 @@ If you want to add a cloudseed mount or a strm only mount edit variable MSTYLE f
 
 Mergerfs will be created in ./output but will not be installed, use as example for your own editing pleasures.
 
+```
 #######################
 AIO MOUNT SETIINGS
 #######################
@@ -119,3 +124,5 @@ CST MOUNT SETIINGS
 #######################
 Choose your own
 Edit ./input cst@.service with your preferred settings.
+You  could make as many different custom mount setups as your system can cope with by running successively with different settings.
+```
