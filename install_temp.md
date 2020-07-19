@@ -5,7 +5,7 @@ Change to your install dir and git clone, eg
 `cd /opt`
 
 ```
-git clone https://github.com/maximuskowalski/smount.git --branch alpha && cd smount
+git clone https://github.com/maximuskowalski/smount.git --branch develop && cd smount
 ```
 
 Use `shmount.sh` for this version. Make executable `chmod +x shmount.sh` (until I learn how to preset this for you), set variables `nano shmount.sh`.
