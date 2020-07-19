@@ -46,10 +46,6 @@ aio () {
   sudo cp ${INSPTH}/output/aio@.service /etc/systemd/system/
   sudo cp ${INSPTH}/output/aio.primer@.service /etc/systemd/system/
   sudo cp ${INSPTH}/output/aio.primer@.timer /etc/systemd/system/
-
-  sudo systemctl enable aio@.service
-  sudo systemctl enable aio.primer@.service
-  sudo systemctl enable aio.primer@.timer
 }
 
 cst () {
@@ -63,10 +59,6 @@ cst () {
   sudo cp ${INSPTH}/output/${CNAME}@.service /etc/systemd/system/
   sudo cp ${INSPTH}/output/${CNAME}.primer@.service /etc/systemd/system/
   sudo cp ${INSPTH}/output/${CNAME}.primer@.timer /etc/systemd/system/
-
-  sudo systemctl enable ${CNAME}@.service
-  sudo systemctl enable ${CNAME}.primer@.service
-  sudo systemctl enable ${CNAME}.primer@.timer
 }
 
 make_config () {
@@ -136,13 +128,12 @@ make_vfskill () {
     done
 }
 
-# Make Dirs and permissions
 make_dirper () {
     sudo mkdir -p ${INSPTH}/{sharedrives,backup,scripts,config,output}
     sudo chown -R ${USER}:${GROUP} ${INSPTH}/{sharedrives,backup,scripts,config,output}
     sudo chmod -R 775 ${INSPTH}/{sharedrives,backup,scripts,config,output}
 }
-# rename existing starter and kill scripts if present can we make CNAME = MSTYLE for making scripts and moving?
+
 make_backups () {
     ( [ -e "${INSPTH}/scripts/${MSTYLE}.starter.sh" ] && mv "${INSPTH}/scripts/${MSTYLE}.starter.sh" ${INSPTH}/backup/${MSTYLE}.starter`date +%Y%m%d%H%M%S`.sh ) > /dev/null 2>&1
     ( [ -e "${INSPTH}/scripts/${MSTYLE}.primer.sh" ] && mv "${INSPTH}/scripts/${MSTYLE}.primer.sh" ${INSPTH}/backup/${MSTYLE}.primer`date +%Y%m%d%H%M%S`.sh ) > /dev/null 2>&1
@@ -151,35 +142,38 @@ make_backups () {
     ( [ -e "${INSPTH}/config/smount.conf" ] && cp "${INSPTH}/config/smount.conf" ${INSPTH}/backup/smount`date +%Y%m%d%H%M%S`.conf ) > /dev/null 2>&1
 }
 
-
-# enable new services TEST LATER if we can pull it out of the mount functions and condense to this
 enabler () {
     sudo systemctl enable ${MSTYLE}@.service
     sudo systemctl enable ${MSTYLE}.primer@.service
     sudo systemctl enable ${MSTYLE}.primer@.timer
 }
 
-# Function calls # 
+execer () {
+    chmod +x ${INSPTH}/scripts/$MSTYLE.starter.sh ${INSPTH}/scripts/$MSTYLE.primer.sh ${INSPTH}/scripts/$MSTYLE.kill.sh ${INSPTH}/scripts/$MSTYLE.restart.sh
+}
+
+
+#####
 check_firstrun
 export_vars
+echo "building"
 ${MSTYLE} $1
+enabler
+echo "enabled"
 make_backups
 echo "backup ok"
 make_shmount.conf $1
 make_config $1
+echo "configured"
 make_starter $1
 make_primer $1
 make_vfskill $1
 make_restart $1
+execer
 
-# daemon reload
+#
 sudo systemctl daemon-reload
-# permissions
-chmod +x ${INSPTH}/scripts/$MSTYLE.starter.sh ${INSPTH}/scripts/$MSTYLE.primer.sh ${INSPTH}/scripts/$MSTYLE.kill.sh ${INSPTH}/scripts/$MSTYLE.restart.sh
-# fire the starter
 ${INSPTH}/scripts/${MSTYLE}.starter.sh  
-# fire the primer but hide it so we dont get bored waiting.
 nohup sh ${INSPTH}/scripts/${MSTYLE}.primer.sh &>/dev/null &
-# consider echo ${WARNINGS} if present.
-echo "${MSTYLE} mount script completed."
+echo "${MSTYLE} mounts completed."
 #eof
