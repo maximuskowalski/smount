@@ -1,26 +1,33 @@
 #!/usr/bin/env bash
-#set -e
-USER=max
-GROUP=max
-INSPTH=/opt/smount
-SET_DIR=/opt/smount/sets/
-SA_PATH=/opt/sa/mounts
-MOUNT_DIR=/mnt/sharedrives
-MSTYLE=aio 
-BINARY=/usr/bin/rclone #/usr/bin/rclone #/opt/crop/rclone_gclone
-RW_MDIR='/mnt/local'
-RO_MDIR='/mnt/sharedrives/sd*'
-SECNDRO_MDIR='/mnt/sharedrives/td*'
-MDIR='/mnt/mergerfs'
-MERGERSERVICE=shmerge
-CNAME=shmount
-MPORT=5575
-CPORT=1
+set -euo pipefail
+#set -xv
+#
+USER=max # user name
+GROUP=max # group name
+MSTYLE=aio # OPTIONS: aio,strm,csd,cst [ All-In-One | Streamer | Cloudseed | Custom ]
+CNAME=shmount # name for your custom mount service
+INSPTH=/opt/smount # install path
+SET_DIR=/opt/smount/sets/ # set files location
+SA_PATH=/opt/sa/mounts # service account file locations
+MOUNT_DIR=/mnt/sharedrives # where to mount the VFS.
+BINARY=/usr/bin/rclone # example /usr/bin/rclone or /opt/crop/rclone_gclone
+MPORT=5575 # Starting port for VFS RC
+CPORT=1  # Starting service account for smount.conf, independent of rclone.conf
+#
+#MERGER - example only created.
+RW_MDIR='/mnt/local' # read write dir for merger
+RO_MDIR='/mnt/sharedrives/sd*' # read only or NC dir for merger
+SECNDRO_MDIR='/mnt/sharedrives/td*' # second read only or NC dir for merger
+MDIR='/mnt/mergerfs' # merger location
+MERGERSERVICE=shmerge # name of your merger service
+#
+# DO NOT CHANGE
+NOW=`date +"%Y-%m-%d-%H-%M-%S"`
 
 check_firstrun () {
   ( [ -e "sa.count" ] || echo ${CPORT} > "sa.count" )
   ( [ -e "port_no.count" ] || echo ${MPORT} > "port_no.count" )
-  ( [ -d "${INSPTH}/{sharedrives,backup,scripts,config,output}" ] && echo > "${INSPTH}/{sharedrives,backup,scripts,config,output} exists"  || make_dirper )
+  ( [ -d "${INSPTH}/{sharedrives,backup,scripts,config,output}" ] || make_dirper )
 }
 
 export_vars () {
@@ -62,7 +69,7 @@ cst () {
 }
 
 make_config () {
-  sed '/^\s*#.*$/d' $SET_DIR/$1|\
+  sed '/^\s*#.*$/d' $SET_DIR/"$1"|\
     while read -r name other;do
       get_port_no_count
       conf="
@@ -77,7 +84,7 @@ SA_PATH=${SA_PATH}/
 }
 
 make_shmount.conf () {
-  sed '/^\s*#.*$/d' ${SET_DIR}/$1|\
+  sed '/^\s*#.*$/d' ${SET_DIR}/"$1"|\
     while read -r name driveid;do 
       get_sa_count
       echo "
@@ -93,32 +100,32 @@ service_account_file_path = ${SA_PATH}
 }
 
 make_starter () {
-  sed '/^\s*#.*$/d' $SET_DIR/$1|\
+  sed '/^\s*#.*$/d' $SET_DIR/"$1"|\
     while read -r name other;do
       echo "sudo systemctl enable ${MSTYLE}@${name}.service && sudo systemctl enable ${MSTYLE}.primer@${name}.service">>${INSPTH}/scripts/${MSTYLE}.starter.sh
     done
-    sed '/^\s*#.*$/d' $SET_DIR/$1|\
+    sed '/^\s*#.*$/d' $SET_DIR/"$1"|\
     while read -r name other;do
       echo "sudo systemctl start ${MSTYLE}@${name}.service">>${INSPTH}/scripts/${MSTYLE}.starter.sh
     done
 }
 
 make_restart () {
-  sed '/^\s*#.*$/d' $SET_DIR/$1|\
+  sed '/^\s*#.*$/d' $SET_DIR/"$1"|\
     while read -r name other;do
       echo "sudo systemctl restart ${MSTYLE}@${name}.service">>${INSPTH}/scripts/${MSTYLE}.restart.sh
     done
 }
 
 make_primer () {
-  sed '/^\s*#.*$/d' $SET_DIR/$1|\
+  sed '/^\s*#.*$/d' $SET_DIR/"$1"|\
     while read -r name other;do
       echo "sudo systemctl start ${MSTYLE}.primer@${name}.service">>${INSPTH}/scripts/${MSTYLE}.primer.sh
     done
 }
 
 make_vfskill () {
-  sed '/^\s*#.*$/d' $SET_DIR/$1|\
+  sed '/^\s*#.*$/d' $SET_DIR/"$1"|\
     while read -r name other;do
       echo "sudo systemctl stop ${MSTYLE}@${name}.service && sudo systemctl stop ${MSTYLE}.primer@${name}.service">>${INSPTH}/scripts/${MSTYLE}.kill.sh
     done
@@ -135,11 +142,11 @@ make_dirper () {
 }
 
 make_backups () {
-    ( [ -e "${INSPTH}/scripts/${MSTYLE}.starter.sh" ] && mv "${INSPTH}/scripts/${MSTYLE}.starter.sh" ${INSPTH}/backup/${MSTYLE}.starter`date +%Y%m%d%H%M%S`.sh ) > /dev/null 2>&1
-    ( [ -e "${INSPTH}/scripts/${MSTYLE}.primer.sh" ] && mv "${INSPTH}/scripts/${MSTYLE}.primer.sh" ${INSPTH}/backup/${MSTYLE}.primer`date +%Y%m%d%H%M%S`.sh ) > /dev/null 2>&1
-    ( [ -e "${INSPTH}/scripts/${MSTYLE}.kill.sh" ] && mv "${INSPTH}/scripts/${MSTYLE}.kill.sh" ${INSPTH}/backup/${MSTYLE}.kill`date +%Y%m%d%H%M%S`.sh ) > /dev/null 2>&1
-    ( [ -e "${INSPTH}/scripts/${MSTYLE}.restart.sh" ] && mv "${INSPTH}/scripts/${MSTYLE}.restart.sh" ${INSPTH}/backup/${MSTYLE}.restart`date +%Y%m%d%H%M%S`.sh ) > /dev/null 2>&1
-    ( [ -e "${INSPTH}/config/smount.conf" ] && cp "${INSPTH}/config/smount.conf" ${INSPTH}/backup/smount`date +%Y%m%d%H%M%S`.conf ) > /dev/null 2>&1
+    [ ! -f "${INSPTH}/scripts/${MSTYLE}.starter.sh" ] || mv "${INSPTH}/scripts/${MSTYLE}.starter.sh" "${INSPTH}/backup/${MSTYLE}.starter.$(NOW).sh"
+    [ ! -f "${INSPTH}/scripts/${MSTYLE}.primer.sh" ] || mv "${INSPTH}/scripts/${MSTYLE}.primer.sh" "${INSPTH}/backup/${MSTYLE}.primer.$(NOW).sh"
+    [ ! -f "${INSPTH}/scripts/${MSTYLE}.kill.sh" ] || mv "${INSPTH}/scripts/${MSTYLE}.kill.sh" "${INSPTH}/backup/${MSTYLE}.kill.$(NOW).sh"
+    [ ! -f "${INSPTH}/scripts/${MSTYLE}.restart.sh" ] || mv "${INSPTH}/scripts/${MSTYLE}.restart.sh" "${INSPTH}/backup/${MSTYLE}.restart.$(NOW).sh"
+    [ ! -f "${INSPTH}/config/smount.conf" ] || cp "${INSPTH}/config/smount.conf" "${INSPTH}/backup/smount.$(NOW).conf"
 }
 
 enabler () {
@@ -157,18 +164,18 @@ execer () {
 check_firstrun
 export_vars
 echo "building"
-${MSTYLE} $1
+${MSTYLE} "$1"
 enabler
 echo "enabled"
 make_backups
 echo "backup ok"
-make_shmount.conf $1
-make_config $1
+make_shmount.conf "$1"
+make_config "$1"
 echo "configured"
-make_starter $1
-make_primer $1
-make_vfskill $1
-make_restart $1
+make_starter "$1"
+make_primer "$1"
+make_vfskill "$1"
+make_restart "$1"
 execer
 
 #
