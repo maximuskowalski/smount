@@ -55,6 +55,28 @@ aio () {
   sudo cp ${INSPTH}/output/aio.primer@.timer /etc/systemd/system/
 }
 
+strm () {
+  envsubst '${myuser},${mygroup},${mysapath},${mybinary},${myinspth}' <${INSPTH}/input/strm@.service >${INSPTH}/output/strm@.service
+  envsubst '${myuser},${mygroup},${mybinary},${mystyle},${myinspth}' <${INSPTH}/input/primer@.service >${INSPTH}/output/strm.primer@.service
+  envsubst '${myuser},${mygroup},${mystyle}' <${INSPTH}/input/primer@.timer >${INSPTH}/output/strm.primer@.timer
+  envsubst '${myrwmdir},${myromdir},${mymdir},${myscndromdir}' <${INSPTH}/input/smerger.service >${INSPTH}/output/strm.merger.service
+
+  sudo cp ${INSPTH}/output/strm@.service /etc/systemd/system/
+  sudo cp ${INSPTH}/output/strm.primer@.service /etc/systemd/system/
+  sudo cp ${INSPTH}/output/strm.primer@.timer /etc/systemd/system/
+}
+
+csd () {
+  envsubst '${myuser},${mygroup},${mysapath},${mybinary},${myinspth}' <${INSPTH}/input/csd@.service >${INSPTH}/output/csd@.service
+  envsubst '${myuser},${mygroup},${mybinary},${mystyle},${myinspth}' <${INSPTH}/input/primer@.service >${INSPTH}/output/csd.primer@.service
+  envsubst '${myuser},${mygroup},${mystyle}' <${INSPTH}/input/primer@.timer >${INSPTH}/output/csd.primer@.timer
+  envsubst '${myrwmdir},${myromdir},${mymdir},${myscndromdir}' <${INSPTH}/input/smerger.service >${INSPTH}/output/csd.merger.service
+
+  sudo cp ${INSPTH}/output/csd@.service /etc/systemd/system/
+  sudo cp ${INSPTH}/output/csd.primer@.service /etc/systemd/system/
+  sudo cp ${INSPTH}/output/csd.primer@.timer /etc/systemd/system/
+}
+
 cst () {
   export MSTYLE=${CNAME}
 
