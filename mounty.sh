@@ -12,15 +12,15 @@ RW_MDIR='/mnt/local'
 RO_MDIR='/mnt/sharedrives/sd*'
 SECNDRO_MDIR='/mnt/sharedrives/td*'
 MDIR='/mnt/mergerfs'
-MERGERSERVICE=anus
-CNAME=anus
+MERGERSERVICE=shmerge
+CNAME=shmount
 MPORT=5575
 CPORT=1
 
 check_firstrun () {
   ( [ -e "sa.count" ] || echo ${CPORT} > "sa.count" )
   ( [ -e "port_no.count" ] || echo ${MPORT} > "port_no.count" )
-  ( [ -d "${INSPTH}/{sharedrives,backup,scripts,config,output}" ] || echo > "${INSPTH}/{sharedrives,backup,scripts,config,output} exists" )
+  ( [ -d "${INSPTH}/{sharedrives,backup,scripts,config,output}" ] && echo > "${INSPTH}/{sharedrives,backup,scripts,config,output} exists"  || make_dirper )
 }
 
 export_vars () {
@@ -74,20 +74,21 @@ make_config () {
     while read -r name other;do
       get_port_no_count
       conf="
-      RCLONE_RC_PORT=${count}
-      SOURCE_REMOTE=${name}:
-      DESTINATION_DIR=$MOUNT_DIR/${name}/
-      SA_PATH=${SA_PATH}/
-      ";
+RCLONE_RC_PORT=${count}
+SOURCE_REMOTE=${name}:
+DESTINATION_DIR=$MOUNT_DIR/${name}/
+SA_PATH=${SA_PATH}/
+
+";
       echo "${conf}" > "${INSPTH}/sharedrives/${name}.conf"
     done
 }
 
 make_shmount.conf () {
   sed '/^\s*#.*$/d' ${SET_DIR}/$1|\
-  while read -r name driveid;do 
-  get_sa_count
-  echo "
+    while read -r name driveid;do 
+      get_sa_count
+      echo "
 [${name}]
 type = drive
 scope = drive
@@ -162,13 +163,6 @@ enabler () {
 check_firstrun
 export_vars
 ${MSTYLE} $1
-
-# mv ${INSPTH}/scripts/${MSTYLE}.starter.sh ${INSPTH}/backup/${MSTYLE}.starter`date +%Y%m%d%H%M%S`.sh > /dev/null 2>&1
-# mv ${INSPTH}/scripts/${MSTYLE}.primer.sh ${INSPTH}/backup/${MSTYLE}.primer`date +%Y%m%d%H%M%S`.sh > /dev/null 2>&1
-# mv ${INSPTH}/scripts/${MSTYLE}.kill.sh ${INSPTH}/backup/${MSTYLE}.kill`date +%Y%m%d%H%M%S`.sh > /dev/null 2>&1
-# mv ${INSPTH}/scripts/${MSTYLE}.restart.sh ${INSPTH}/backup/${MSTYLE}.restart`date +%Y%m%d%H%M%S`.sh > /dev/null 2>&1
-# mv ${INSPTH}/config/smount.conf ${INSPTH}/backup/smount.`date +%Y%m%d%H%M%S`.conf > /dev/null 2>&1
-#enabler
 make_backups
 echo "backup ok"
 make_shmount.conf $1
