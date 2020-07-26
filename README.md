@@ -1,3 +1,4 @@
+
 A sharedrive mounter.
 
 Takes a list of sharedrives and creates rclone VFS mounts.
@@ -7,18 +8,23 @@ _This is an ~~alpha~~ beta release and it will change.  Perhaps reconsider insta
 
 ### Recommended
 Grab the latest rclone_gclone from l3uddz: 
+
 https://transfer.cloudbox.media/nnVvn/rclone_gclone_v1.52-DEV  
+
 Be sure to make it executable: `chmod +x rclone_gclone`
 
 ### Install 
-1) Change to your install dir and git clone:
+1) Change to your install dir and git clone:  
 `cd /opt`
+
 `git clone https://github.com/maximuskowalski/smount.git --branch develop && cd smount`
 
 2) Make the `shmount.sh` file executable:
+
 `chmod +x shmount.sh`  
 
 3) Open the file and set your variables 
+
 `nano shmount.sh`
 
 ```
@@ -53,21 +59,21 @@ MERGERSERVICE=shmerge # name of your merger service
 Copy the sample set before editing:  
 `cp /opt/smount/sets/aiosample.set /opt/smount/sets/aio.set`  
 and/or  
-`cp /opt/smount/sets/sets/aiosample.set /opt/smount/sets/csd.set`  
+`cp /opt/smount/sets/aiosample.set /opt/smount/sets/csd.set`  
 `cp /opt/smount/sets/aiosample.set /opt/smount/sets/strm.set`  
 `cp /opt/smount/sets/aiosample.set /opt/smount/sets/ezekiel.set`  
 
-Edit your sets using nano or however you prefer and save.  
-`nano ~/smount/sets/ezekiel.set` 
+Edit the set file to add in the drive names and TD IDs:  
+`nano /opt/smount/sets/aio.set` 
 
 ### Run
 Run the script with the set for your mountstyle.
 
-`./mount.sh aio.set`
+`./shmount.sh aio.set`
 
 If you want to add a cloudseed mount or a strm only mount edit variable MSTYLE `MSTYLE=csd` for those and run again with set for new mounts.
 
-`./mount.sh csd.set`
+`./shmount.sh csd.set`
 
 Mergerfs will be created in ./output but will not be installed, use as example for your own editing pleasures.
 
