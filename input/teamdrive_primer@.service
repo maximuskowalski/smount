@@ -22,12 +22,12 @@ User=$user
 Group=$group
 Type=oneshot
 ExecStartPre=/bin/sleep 10
-ExecStart=/usr/bin/rclone \
+ExecStart=/usr/bin/rclone rc vfs/refresh \
   --config /home/$user/.config/rclone/rclone.conf \
+  --user-agent='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.131 Safari/537.36' \
   --timeout=1h \
   -vvv \
   --rc-addr=localhost:${RCLONE_RC_PORT} \
-  rc vfs/refresh
 
 [Install]
 WantedBy=default.target
