@@ -9,7 +9,7 @@ _This is an ~~alpha~~ beta release and it will change.  Perhaps reconsider insta
 ### Recommended
 Grab the latest rclone_gclone from l3uddz: 
 
-https://transfer.cloudbox.media/nnVvn/rclone_gclone_v1.52-DEV  
+https://transfer.cloudbox.media/rL2H6/rclone_gclone_v1.52-DEV_4
 
 Be sure to make it executable: `chmod +x rclone_gclone`
 
