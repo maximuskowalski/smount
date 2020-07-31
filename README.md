@@ -6,6 +6,8 @@ Takes a list of sharedrives and creates rclone VFS mounts.
 # Develop Branch Install Instructions
 _This is an ~~alpha~~ beta release and it will change.  Perhaps reconsider installing this for anything other than a test, as you may lose stuff. You have been warned._
 
+Some of the current preset mount settings use VFS cache features requiring rclone beta 1.5.2 and above.
+
 ### Recommended
 Grab the latest rclone_gclone from l3uddz: 
 
