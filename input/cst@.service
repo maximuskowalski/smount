@@ -13,6 +13,7 @@ After=network-online.target
 
 [Service]
 Type=notify
+ExecStartPre=/bin/sleep 10
 
 User=${myuser}
 Group=${mygroup}

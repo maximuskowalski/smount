@@ -13,6 +13,7 @@ After=network-online.target
 
 [Service]
 Type=notify
+ExecStartPre=/bin/sleep 10
 
 User=${myuser}
 Group=${mygroup}
@@ -32,8 +33,12 @@ ExecStart=${mybinary} mount \
   --rc-no-auth \
   --use-mmap \
   --rc-addr=localhost:${RCLONE_RC_PORT} \
-  --dir-cache-time=168h \
+  --poll-interval=30s \
   --timeout=10m \
+  --vfs-cache-max-age=168h \
+  --vfs-cache-mode=writes \
+  --vfs-cache-poll-interval=30s \
+  --vfs-cache-max-size=50G \
   --umask=002 \
   --syslog \
   -v \
