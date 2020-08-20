@@ -33,6 +33,8 @@ ExecStart=${mybinary} mount \
   --rc-no-auth \
   --use-mmap \
   --rc-addr=localhost:${RCLONE_RC_PORT} \
+  --async-read=false \
+  --cache-db-purge \
   --dir-cache-time=168h \
   --timeout=10m \
   --vfs-cache-max-age=24h \
