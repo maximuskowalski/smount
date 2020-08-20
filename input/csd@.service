@@ -32,21 +32,22 @@ ExecStart=${mybinary} mount \
   --rc \
   --rc-no-auth \
   --rc-addr=localhost:${RCLONE_RC_PORT} \
-  --dir-cache-time=36h \
+  --dir-cache-time=72h \
   --poll-interval=60s \
   --timeout=30m \
-  --vfs-cache-max-age=36h \
+  --vfs-cache-max-age=72h \
   --vfs-cache-mode=full \
   --vfs-cache-poll-interval=30s \
   --vfs-read-chunk-size=8M \
   --vfs-read-chunk-size-limit=512M \
-  --vfs-cache-max-size=50G \
+  --vfs-read-ahead=8M \
+  --vfs-cache-max-size=100G \
+  --buffer-size=8M \
   --tpslimit-burst=50 \
   --transfers=16 \
   --checkers=12 \
-  --async-read=true \
+  --async-read=false \
   --no-checksum \
-  --no-modtime \
   --umask=002 \
   --syslog \
   -v \
