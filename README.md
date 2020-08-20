@@ -11,7 +11,7 @@ Some of the current preset mount settings use VFS cache features requiring rclon
 ### Recommended
 Grab the latest rclone_gclone from l3uddz: 
 
-https://transfer.cloudbox.media/rL2H6/rclone_gclone_v1.52-DEV_4
+https://transfer.cloudbox.media/FjUqh/rclone_gclone_v1.52.3-DEV_1
 
 Be sure to make it executable: `chmod +x rclone_gclone`
 
