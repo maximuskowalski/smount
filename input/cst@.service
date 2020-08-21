@@ -25,30 +25,84 @@ ExecStartPre=-/usr/bin/sudo /bin/chmod -R 775 ${DESTINATION_DIR}
 ExecStartPre=-/usr/bin/sudo /bin/chown -R ${myuser}:${mygroup} ${DESTINATION_DIR}
 ExecStart=${mybinary} mount \
   --config=${myinspth}/config/smount.conf \
-  --user-agent='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.131 Safari/537.36' \
+  --user-agent='Mozilla/5.0 (X11; CrOS x86_64 13099.72.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.94 Safari/537.36' \
+  --rc-addr=localhost:${RCLONE_RC_PORT} \
+  --log-file /opt/rclone/logs/${NAME}_rclone.log \
+#########################
+  --allow-non-empty \
   --allow-other \
+  --async-read=false \
+  --cache-writes \
+  --default-permissions \
   --drive-skip-gdocs \
+  --drive-use-trash \
   --fast-list \
+  --no-modtime \
   --rc \
   --rc-no-auth \
+  --syslog \
   --use-mmap \
-  --rc-addr=localhost:${RCLONE_RC_PORT} \
+  --attr_timeout=1s \
+  --buffer_size=16M \
+  --cache_dir='/home/${myuser}/.cache/rclone' \
+  --checkers=8 \
+  --contimeout=1m0s \
+  --cutoff_mode=hard \
   --dir-cache-time=168h \
+  --dir_perms=0777 \
+  --expect_continue_timeout=1s \
+  --file_perms=0666 \
+  --gid='%g' \
+  --local_path='%h/%i' \
+  --log_format=date,time \
+  --log_level=notice \
+  --low_level_retries=10 \
+  --max_age=off \
+  --max_backlog=10000 \
+  --max-delete=-1 \
+  --max-depth=-1 \
+  --max-read-ahead=128k \
+  --max-size=off \
+  --max-stats-groups=1000 \
+  --max-transfer=off \
+  --min-age=off \
+  --min-size=off \
+  --modify-window=1ns \
+  --multi-thread-cutoff=250M \
+  --multi-thread-streams=4 \
   --poll-interval=30s \
+  --remote-name='%i' \
+  --remote-path='/' \
+  --rc-job-expire-duration=1m0s \
+  --rc-job-expire-interval=10s \
+  --rc-max-header-bytes=4096 \
+  --rc-realm=rclone \
+  --rc-server-read-timeout=1h0m0s \
+  --rc-server-write-timeout=1h0m0s \
+  --rc-web-fetch-url='https://api.github.com/repos/rclone/rclone-webui-react/releases/latest' \
+  --retries=3 \
+  --stats-file-name-length=45 \
+  --stats-log-level=info \
+  --stats-unit=bytes \
+  --stats=1m0s \
+  --streaming-upload-cutoff=100k \
+  --syslog-facility=daemon \
   --timeout=10m \
-  --cache-dir=/mnt/disk2/mygreatcache \
-  --vfs-cache-max-age=24h \
+  --tpslimit-burst=1 \
+  --track-renames-strategy=hash \
+  --transfers=4 \
+  --uid='%U' \
+  --umask=002 \
+  --verbose=0 \
+  --vfs-cache-max-age=72h \
+  --vfs-cache-max-size=100G \
   --vfs-cache-mode=writes \
   --vfs-cache-poll-interval=30s \
-  --vfs-cache-max-size=600G \
-  --vfs-read-chunk-size=16M \
   --vfs-read-chunk-size-limit=512M \
-  --buffer-size=2M \
-  --tpslimit-burst=50 \
-  --transfers=16 \
-  --checkers=12 \
-  --umask=002 \
-  --syslog \
+  --vfs-read-chunk-size=128M \
+  --vfs-read-wait=20ms \
+  --vfs-write-wait=1s \
+#######################
   -v \
   ${SOURCE_REMOTE} ${DESTINATION_DIR}
 # Unmount on stop

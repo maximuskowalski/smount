@@ -6,12 +6,13 @@ After=network-online.target
 Type=forking
 GuessMainPID=no
 ExecStart=/usr/bin/mergerfs \
-  -o category.create=ff,minfreespace=0,allow_other \
-  -o dropcacheonclose=true,xattr=nosys \
+  -o category.action=all,category.create=ff  \
+  -o allow_other,nonempty,dropcacheonclose=true, \
   -o statfs_ignore=ro,use_ino,umask=0002,noatime \
-  -o async_read=false,cache.files=partial \
+  -o async_read=false,cache.files=partial,xattr=nosys \
   ${myrwmdir}=RW:${myromdir}=NC ${mymdir}
 ExecStop=/bin/fusermount -u ${mymdir}
 
 [Install]
 WantedBy=default.target
+
