@@ -33,6 +33,7 @@ ExecStart=/usr/bin/rclone mount \
   --allow-other \
   --fast-list \
   --rc \
+  --rc-no-auth \
   --drive-skip-gdocs \
   --dir-cache-time=72h \
   --timeout=10m \
