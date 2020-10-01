@@ -19,10 +19,10 @@ Type=oneshot
 ExecStartPre=/bin/sleep 10
 ExecStart=${mybinary} rc vfs/refresh \
   --config=${myinspth}/config/smount.conf \
+  --rc-addr=localhost:${RCLONE_RC_PORT} \
   --user-agent='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.131 Safari/537.36' \
   --timeout=1h \
   -vvv \
-  --rc-addr=localhost:${RCLONE_RC_PORT} \
 
 [Install]
 WantedBy=default.target
