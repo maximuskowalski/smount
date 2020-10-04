@@ -41,10 +41,10 @@ ExecStart=/usr/bin/rclone mount \
   --async-read=false \
   --syslog \
   -v \
-  $SOURCE_REMOTE $DESTINATION_DIR
+  ${SOURCE_REMOTE} ${DESTINATION_DIR}
 
 # Unmount on stop
-ExecStop=/bin/umount -l $DESTINATION_DIR
+ExecStop=/bin/fusermount -uz ${DESTINATION_DIR}
 Restart=on-abort
 RestartSec=5
 StartLimitInterval=60s
