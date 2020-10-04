@@ -1,5 +1,5 @@
 ####################################################################
-# Title:         Rclone Stream VFS Service                         #
+# Title:         Rclone VFS Service                                #
 # Author(s):     desimaniac, Horjulf, davemaster223, RXWatcher     #
 #                                                                  #
 ####################################################################
@@ -7,7 +7,7 @@
 ####################################################################
 
 [Unit]
-Description=rclone STRM VFS
+Description=rclone ${mycname} VFS
 # Depend on network
 After=network-online.target
 
@@ -25,26 +25,27 @@ ExecStartPre=-/usr/bin/sudo /bin/chmod -R 775 ${DESTINATION_DIR}
 ExecStartPre=-/usr/bin/sudo /bin/chown -R ${myuser}:${mygroup} ${DESTINATION_DIR}
 ExecStart=${mybinary} mount \
   --config=${myinspth}/config/smount.conf \
-  --user-agent='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.131 Safari/537.36' \
+  --user-agent='Mozilla/5.0 (X11; CrOS x86_64 13099.72.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.94 Safari/537.36' \
+  --rc-addr=localhost:${RCLONE_RC_PORT} \
   --allow-other \
+  --allow-non-empty \
   --drive-skip-gdocs \
   --fast-list \
   --rc \
   --rc-no-auth \
   --use-mmap \
-  --rc-addr=localhost:${RCLONE_RC_PORT} \
   --async-read=false \
   --cache-db-purge \
-  --dir-cache-time=168h \
+  --dir-cache-time=72h \
   --timeout=10m \
-  --vfs-cache-max-age=24h \
+  --vfs-cache-max-age=48h \
   --vfs-cache-mode=full \
   --vfs-cache-poll-interval=30s \
-  --vfs-cache-max-size=50G \
+  --vfs-cache-max-size=150G \
   --umask=002 \
   --syslog \
   -v \
-  $SOURCE_REMOTE $DESTINATION_DIR
+  ${SOURCE_REMOTE} ${DESTINATION_DIR}
 # Unmount on stop
 ExecStop=/bin/fusermount -uz ${DESTINATION_DIR}
 Restart=on-abort

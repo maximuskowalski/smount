@@ -27,8 +27,8 @@ ExecStart=${mybinary} mount \
   --config=${myinspth}/config/smount.conf \
   --user-agent='Mozilla/5.0 (X11; CrOS x86_64 13099.72.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.94 Safari/537.36' \
   --rc-addr=localhost:${RCLONE_RC_PORT} \
-  --log-file /opt/rclone/logs/${NAME}_rclone.log \
 #########################
+  --log-file=/opt/rclone/logs/my_rclone.log \
   --allow-non-empty \
   --allow-other \
   --async-read=false \
@@ -106,7 +106,7 @@ ExecStart=${mybinary} mount \
   -v \
   ${SOURCE_REMOTE} ${DESTINATION_DIR}
 # Unmount on stop
-ExecStop=/bin/umount -l ${DESTINATION_DIR}
+ExecStop=/bin/fusermount -uz ${DESTINATION_DIR}
 Restart=on-abort
 RestartSec=5
 StartLimitInterval=60s
