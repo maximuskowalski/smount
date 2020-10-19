@@ -36,10 +36,10 @@ mkmounce() {
 
 # servicemaker
 sysdmaker() {
-  sudo bash -c 'cat > /etc/systemd/system/${RUNION}.service' <<EOF
-# /etc/systemd/system/${RUNION}.service
+  sudo bash -c 'cat > /etc/systemd/system/munter.service' <<EOF
+# /etc/systemd/system/munter.service
 [Unit]
-Description=${RUNION} Mount
+Description=Munter Mount
 After=network-online.target
 
 [Service]
@@ -47,26 +47,26 @@ User=${USER}
 Group=${GROUP}
 Type=notify
 ExecStartPre=/bin/sleep 10
-ExecStart=/usr/bin/rclone mount \
-        --config=/home/${USER}/.config/rclone/rclone.conf \
-        --allow-other \
-        --allow-non-empty \
-        --rc \
-        --rc-addr=localhost:5573 \
-        --vfs-read-ahead=128M \
-        --vfs-read-chunk-size=64M \
-        --vfs-read-chunk-size-limit=2G \
-        --vfs-cache-mode=full \
-        --vfs-cache-max-age=24h \
-        --vfs-cache-max-size=200G \
-        --fast-list \
-        --buffer-size=64M \
-        --dir-cache-time=1h \
-        --timeout=10m \
-        --umask=002 \
-        --syslog \
-        -v \
-        ${RUNION}: ${MNTPOINT}
+ExecStart=/usr/bin/rclone mount \\
+          --config=/home/${USER}/.config/rclone/rclone.conf \\
+          --allow-other \\
+          --allow-non-empty \\
+          --rc \\
+          --rc-addr=localhost:5573 \\
+          --vfs-read-ahead=128M \\
+          --vfs-read-chunk-size=64M \\
+          --vfs-read-chunk-size-limit=2G \\
+          --vfs-cache-mode=full \\
+          --vfs-cache-max-age=24h \\
+          --vfs-cache-max-size=200G \\
+          --fast-list \\
+          --buffer-size=64M \\
+          --dir-cache-time=1h \\
+          --timeout=10m \\
+          --umask=002 \\
+          --syslog \\
+          -v \\
+          ${RUNION}: ${MNTPOINT}
 ExecStop=/bin/fusermount -uz ${MNTPOINT}
 Restart=on-abort
 RestartSec=5
@@ -80,24 +80,24 @@ EOF
 
 # primaker
 primaker() {
-  sudo bash -c 'cat > /etc/systemd/system/${RUNION}_primer.service' <<EOF
-# /etc/systemd/system/${RUNION}_primer.service
+  sudo bash -c 'cat > /etc/systemd/system/munter_primer.service' <<EOF
+# /etc/systemd/system/munter_primer.service
 [Unit]
-Description=${RUNION} Primer - Service
-Requires=${RUNION}.service
-After=${RUNION}.service
+Description=Munter Primer - Service
+Requires=munter.service
+After=munter.service
 
 [Service]
 User=${USER}
 Group=${GROUP}
 Type=oneshot
 ExecStartPre=/bin/sleep 10
-ExecStart=/usr/bin/rclone rc vfs/refresh \
-        recursive=true \
-        --config=/home/${USER}/.config/rclone/rclone.conf \
-        --timeout=1h \
-        -vvv \
-        --rc-addr=localhost:5573
+ExecStart=/usr/bin/rclone rc vfs/refresh \\
+          recursive=true \\
+          --config=/home/${USER}/.config/rclone/rclone.conf \\
+          --timeout=1h \\
+          --rc-addr=localhost:5573 \\
+          -vvv \\
 
 [Install]
 WantedBy=default.target
@@ -106,10 +106,10 @@ EOF
 
 # primetimer
 primtaker() {
-  sudo bash -c 'cat > /etc/systemd/system/${RUNION}_primer.timer' <<EOF
-# /etc/systemd/system/${RUNION}_primer.timer
+  sudo bash -c 'cat > /etc/systemd/system/munter_primer.timer' <<EOF
+# /etc/systemd/system/munter_primer.timer
 [Unit]
-Description=${RUNION} Primer - Timer
+Description=Munter Primer - Timer
 
 [Timer]
 OnUnitInactiveSec=167h
@@ -120,8 +120,8 @@ EOF
 }
 
 enabler() {
-  sudo systemctl enable ${RUNION}.service
-  sudo systemctl enable ${RUNION}_primer.service
+  sudo systemctl enable munter.service
+  sudo systemctl enable munter_primer.service
 }
 
 rmk01
@@ -134,6 +134,6 @@ primaker
 primtaker
 sudo systemctl daemon-reload
 enabler
-sudo systemctl start ${RUNION}.service
-nohup sh sudo systemctl start ${RUNION}_primer.service &>/dev/null &
+sudo systemctl start munter.service
+nohup sh sudo systemctl start munter_primer.service &>/dev/null &
 echo "${RUNION} mounts completed."
