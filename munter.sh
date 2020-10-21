@@ -26,7 +26,7 @@ rmk03() {
 }
 
 mkreunion() {
-  rclone config create ${RUNION} union upstreams "${MNT1}: ${MNT2}: ${MNT3}:"
+  rclone config create ${RUNION} union upstreams "${MNT1}:ro ${MNT2}:ro ${MNT3}:ro"
 }
 
 # mountpoints
