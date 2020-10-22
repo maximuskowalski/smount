@@ -31,11 +31,20 @@ ExecStart=/usr/bin/rclone mount \
   --user-agent='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.131 Safari/537.36' \
   --rc-addr=localhost:${RCLONE_RC_PORT} \
   --allow-other \
+  --allow-non-empty \
   --fast-list \
   --rc \
   --rc-no-auth \
   --drive-skip-gdocs \
-  --dir-cache-time=72h \
+  --buffer-size=32M \
+  --vfs-read-ahead=128M \
+  --vfs-read-chunk-size=32M \
+  --vfs-read-chunk-size-limit=2G \
+  --vfs-cache-mode=full \
+  --vfs-cache-max-age=168h \
+  --vfs-cache-max-size=50G \
+  --poll-interval=1m \  
+  --dir-cache-time=168h \
   --timeout=10m \
   --umask=002 \
   --async-read=false \
