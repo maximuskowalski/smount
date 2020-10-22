@@ -14,19 +14,19 @@ MNTPOINT=/mnt/reunion
 
 # remotes
 rmk01() {
-  rclone config create ${MNT1} s3 provider Minio access_key_id ${KEY} secret_access_key ${SECRET} region us-east-1 endpoint ${ENDPOINT1} chunk_size 90M upload_concurrency 16 disable_http2 true
+  rclone config create ${MNT1} s3 provider Minio access_key_id ${KEY} secret_access_key ${SECRET} region us-east-1 endpoint ${ENDPOINT1} disable_http2 true
 }
 
 rmk02() {
-  rclone config create ${MNT2} s3 provider Minio access_key_id ${KEY} secret_access_key ${SECRET} region us-east-1 endpoint ${ENDPOINT2} chunk_size 90M upload_concurrency 16 disable_http2 true
+  rclone config create ${MNT2} s3 provider Minio access_key_id ${KEY} secret_access_key ${SECRET} region us-east-1 endpoint ${ENDPOINT2} disable_http2 true
 }
 
 rmk03() {
-  rclone config create ${MNT3} s3 provider Minio access_key_id ${KEY} secret_access_key ${SECRET} region us-east-1 endpoint ${ENDPOINT3} chunk_size 90M upload_concurrency 16 disable_http2 true
+  rclone config create ${MNT3} s3 provider Minio access_key_id ${KEY} secret_access_key ${SECRET} region us-east-1 endpoint ${ENDPOINT3} disable_http2 true
 }
 
 mkreunion() {
-  rclone config create ${RUNION} union upstreams "${MNT1}: ${MNT2}: ${MNT3}:"
+  rclone config create ${RUNION} union upstreams "${MNT1}:ro ${MNT2}:ro ${MNT3}:ro"
 }
 
 # mountpoints
