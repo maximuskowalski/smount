@@ -45,7 +45,6 @@ ExecStart=${mybinary} mount \
   --buffer-size=8M \
   --tpslimit-burst=50 \
   --transfers=16 \
-  --checkers=12 \
   --async-read=false \
   --no-checksum \
   --umask=002 \
