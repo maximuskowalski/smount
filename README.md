@@ -1,3 +1,5 @@
+# NEW DEFAUL BRANCH - WIKI is yet to be reworked, follow these instructions below only.
+
 # shmount
 
 _An interactive rclone union mount installer._
