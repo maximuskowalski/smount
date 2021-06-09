@@ -1,153 +1,215 @@
+# shmount
 
-A sharedrive mounter.
+_An interactive rclone union mount installer._
 
-Takes a list of sharedrives and creates rclone VFS mounts.
+## summary
 
-# Develop Branch Install Instructions
-_This is an ~~alpha~~ beta release and it will change.  Perhaps reconsider installing this for anything other than a test, as you may lose stuff. You have been warned._
+You still need to read and understand a few things but this script is basically a thing you run and answer a few questions as you go. Ideal for those who don't like to do stuff themselves, or having trouble understanding the documentation they have most definitely read through at least twice
 
-Some of the current preset mount settings use VFS cache features requiring rclone beta 1.5.2 and above.
+If you are here I am assuming you know what service accounts, share-drives and such are. To use this script you will need service account files on the machine you wish to use. Probably the easiest way to explain is just to demonstrate.
 
-### Recommended
-Grab the latest rclone_gclone from l3uddz: 
+After running the script you will (probably) have an rclone union mount serving your remote files from a directory mounted on the system. Rclone will be installed and updated, or not if you prefer.
 
-https://transfer.cloudbox.media/FjUqh/rclone_gclone_v1.52.3-DEV_1
+Your rclone configuration file and a system service file will be created, as will the required mount directories.
 
-Be sure to make it executable: `chmod +x rclone_gclone`
+The file `/etc/fuse.conf` will be checked and edited to include `user_allow_other` if needed.
 
-### Install 
-1) Change to your install dir and git clone:  
-`cd /opt`
+A log file for the mount will be created at `~/logs/shmount.log`
 
-`git clone https://github.com/maximuskowalski/smount.git --branch develop && cd smount`
+## requirements
 
-2) Make the `shmount.sh` file executable:
+**You will need:-**
 
-`chmod +x shmount.sh`  
+- A Debian based Linux OS, Debian, Ubuntu, Pop!OS etcetera.
 
-3) Open the file and set your variables 
+- Password-less sudo,
 
-`nano shmount.sh`
+- A least one service account in a directory on the server
 
-```
-# VARIABLES
+- At least one share-drive that the service account(s) can access
 
-USER=max # user name
-GROUP=max # group name
-MSTYLE=aio # OPTIONS: aio,strm,csd,cst [ All-In-One | Streamer | Cloudseed | Custom ]
-CNAME=shmount # name for your custom mount service
-INSPTH=/opt/smount # install path
-SET_DIR=/opt/smount/sets/ # set files location
-SA_PATH=/opt/sa/mounts # service account file locations
-MOUNT_DIR=/mnt/sharedrives # where to mount the VFS.
-BINARY=/usr/bin/rclone # example /usr/bin/rclone or /opt/crop/rclone_gclone
-MPORT=5575 # Starting port for VFS RC
-CPORT=1  # Starting service account for smount.conf, independent of rclone.conf
-#
-#MERGER - example only created.
-RW_MDIR='/mnt/local' # read write dir for merger
-RO_MDIR='/mnt/sharedrives/sd*' # read only or NC dir for merger
-SECNDRO_MDIR='/mnt/sharedrives/td*' # second read only or NC dir for merger
-MDIR='/mnt/mergerfs' # merger location
-MERGERSERVICE=shmerge # name of your merger service
+## example use
 
+_Instructions for accessing script to come._ Git clone
+
+Run the script , answer the questions.
+
+```assembly
+➜  shmount git:(main) ✗ ./shmount.sh
+
+Would you like to install or update rclone? [Y/N] : y
+
+rclone will be installed
+
+Do you want rclone beta or stable?
+
+1) Beta
+2) Stable
+3) No
+#? 2
 ```
 
-#### Things to Note
-1) It does not use rclone.conf but builds a config on the fly. And this special config will be added to every time you run this script -- it does not replace or edit the contents.  This means if you run the same set multiple times (perhaps because of error) you will end up with multiples of the same mount configs. 
-2) Auth is only by the service account method for now. If you have only 10 service accounts and run this fifty times you might want to manually edit afterwards, there is not currently a stop for max .json in place. 
+If you elect to install or update rclone the latest version will be installed, select beta **(1)** or stable **(2)** to choose your branch. The third option **(3)** is for a change of heart and leaving rclone as it currently is. For now just choose stable, the configuration of drives will fail on beta _(rclone v1.56.0-beta.5531.41f561bf2)_. The installer won't re-download if it is not needed.
 
-### Make Setfiles
-Copy the sample set before editing:  
-`cp /opt/smount/sets/aiosample.set /opt/smount/sets/aio.set`  
-and/or  
-`cp /opt/smount/sets/aiosample.set /opt/smount/sets/csd.set`  
-`cp /opt/smount/sets/aiosample.set /opt/smount/sets/strm.set`  
-`cp /opt/smount/sets/aiosample.set /opt/smount/sets/ezekiel.set`  
+The configuration will be generated without a proper share-drive ID if you have rclone beta installed. Rerunning the script using existing drive names will overwrite the configurations.
 
-Edit the set file to add in the drive names and TD IDs:  
-`nano /opt/smount/sets/aio.set` 
+If you already have beta installed then choose stable and upgrade to beta again afterwards using :-
 
-### Run
-Run the script with the set for your mountstyle.
-
-`./shmount.sh aio.set`
-
-If you want to add a cloudseed mount or a strm only mount edit variable MSTYLE `MSTYLE=csd` for those and run again with set for new mounts.
-
-`./shmount.sh csd.set`
-
-Mergerfs will be created in ./output but will not be installed, use as example for your own editing pleasures.
-
-```
-#######################
-AIO MOUNT SETIINGS
-#######################
---allow-other \
- --drive-skip-gdocs \
- --fast-list \
- --rc \
- --rc-no-auth \
- --use-mmap \
- --rc-addr=localhost:\${RCLONE_RC_PORT} \
- --dir-cache-time=168h \
- --timeout=10m \
-
-#######################
-STRM MOUNT SETIINGS
-#######################
---allow-other \
- --drive-skip-gdocs \
- --fast-list \
- --rc \
- --rc-no-auth \
- --use-mmap \
- --rc-addr=localhost:\${RCLONE_RC_PORT} \
- --dir-cache-time=168h \
- --timeout=10m \
- --vfs-cache-max-age=24h \
- --vfs-cache-mode=writes \
- --vfs-cache-max-size=200G \
-
-#######################
-CSD MOUNT SETIINGS
-#######################
---allow-other \
- --drive-skip-gdocs \
- --fast-list \
- --rc \
- --rc-no-auth \
- --rc-addr=localhost:\${RCLONE_RC_PORT} \
- --dir-cache-time=36h \
- --poll-interval=60s \
- --timeout=30m \
- --vfs-cache-max-age=36h \
- --vfs-cache-mode=full \
- --vfs-cache-poll-interval=30s \
- --vfs-read-chunk-size=8M \
- --vfs-read-chunk-size-limit=512M \
- --vfs-cache-max-size=50G \
- --tpslimit-burst=50 \
- --transfers=16 \
- --checkers=12 \
- --async-read=true \
- --no-checksum \
- --no-modtime \
-
-#######################
-CST MOUNT SETIINGS
-#######################
-Choose your own
-Edit ./input cst@.service with your preferred settings.
-You  could make as many different custom mount setups as your system can cope with by running successively with different settings applied to `./input cst@.service` each time.
+```assembly
+curl https://rclone.org/install.sh | sudo bash -s beta
 ```
 
-## Support on ~~Beerpay~~ Github Sponsors
-Hey dude! Help me out for a couple of :beers:!
+Universal configuration options are next.
 
-https://github.com/sponsors/maximuskowalski
+```assembly
+Please enter service account file path, for example /opt/sa/mounts :
+/opt/sa/mounts
 
-[![Buy me a coffee][buymeacoffee-shield]][buymeacoffee]
+Please enter an existing service account filename, for example 123.json :
+000001.json
 
-[buymeacoffee-shield]: https://www.buymeacoffee.com/assets/img/guidelines/download-assets-sm-2.svg
-[buymeacoffee]: https://github.com/sponsors/maximuskowalski
+Please enter name to use for rclone union mount, eg reunion.
+reunion
+
+Rclone mount will use vfs-cache-mode full, and use 200GB, do you want to change max cache size?
+1) Yes
+2) No
+#? 1
+Please enter cache max size +G (ex 50G)
+10G
+
+User is:          max
+SA Path:          /opt/sa/mounts
+SA file:          /opt/sa/mounts/000001.json
+Cache size:       10G
+Mount Name:       reunion
+Mount Point:      /mnt/reunion
+Continue with installation?
+1) Continue
+2) Exit
+#? 1
+```
+
+Enter the universal options that will apply to the rclone union and all upstream drives we configure as part of it. Once all these are entered you will have a chance to check details before going ahead. If you have made a mistake you can choose option **(2)** and exit the script at this point to try again.
+
+Using vfs-cache-mode full, whatever you choose for your maximum cache size **you will need to have the free space for**. A full drive is no fun so be careful, be sure. In this version of the script your cache will go to the default cache location with your user home directory. If you have partitioned your home directory separately **make sure you are checking the right location for free space**. I would suggest leaving a minimum of 50GB free. I will build in a fail safe check at some point but for now this is on you.
+
+```assembly
+Installing rclone stable
+
+......... # installation of rclone ommitted from documentation
+
+The latest version of rclone rclone v1.55.1 is already installed.
+```
+
+Rclone will be installed or updated with the branch you selected, in this example the latest stable version of rclone was already up to date.
+
+The script calls the official installation script from https://rclone.org/install/ - **you may wish to review this prior to installation**, some people may be happy to take the risk of a curled script.
+
+STABLE
+
+```
+curl https://rclone.org/install.sh | sudo bash
+```
+
+BETA
+
+```
+curl https://rclone.org/install.sh | sudo bash -s beta
+```
+
+The installer won't re-download if it is not needed.
+
+Next we will be configuring all the drives we wish to be part of the union.
+
+```assembly
+Please enter Share Drive Name :
+my_nottv
+
+Please enter my_nottv Drive ID, for example 0A1xxxxxxxxxUk9PVA :
+0A1xxxxxxxxxUk9PVA
+
+creating rclone config for my_nottv with ID 0A1xxxxxxxxxUk9PVA
+
+Remote config
+--------------------
+[my_nottv]
+type = drive
+scope = drive
+server_side_across_configs = true
+team_drive = 0A1xxxxxxxxxUk9PVA
+service_account_file = /opt/sa/mounts/000001.json
+--------------------
+
+Would you like to add another drive? [Y/N] : y
+adding more drives
+
+Please enter Share Drive Name :
+my_notmovies
+
+Please enter my_notmovies Drive ID, for example 0A1xxxxxxxxxUk9PVA :
+0A1yyyyyyyyyyyUk9PVA
+
+creating rclone config for my_notmovies with ID 0A1yyyyyyyyyyyUk9PVA
+
+Remote config
+--------------------
+[my_notmovies]
+type = drive
+scope = drive
+server_side_across_configs = true
+team_drive = 0A1yyyyyyyyyyyUk9PVA
+service_account_file = /opt/sa/mounts/000001.json
+--------------------
+
+Would you like to add another drive? [Y/N] : y
+adding more drives
+
+Please enter Share Drive Name :
+my_notmusic
+
+Please enter my_notmusic Drive ID, for example 0A1xxxxxxxxxUk9PVA :
+0A1zzzzzzzzzzzzUk9PVA
+
+creating rclone config for my_notmusic with ID 0A1zzzzzzzzzzzzUk9PVA
+
+Remote config
+--------------------
+[my_notmusic]
+type = drive
+scope = drive
+server_side_across_configs = true
+team_drive = 0A1zzzzzzzzzzzzUk9PVA
+service_account_file = /opt/sa/mounts/000001.json
+--------------------
+
+Would you like to add another drive? [Y/N] : n
+Drives added: my_nottv my_notmovies my_notmusic
+
+lettuce build mounts
+```
+
+After each drive is added you have the option to add another drive until you are finished.
+
+For each drive you will need to supply two pieces of information, the **name** you wish to use and the **drive ID**. The name doesnt matter too much you can call your drive Angus if you wish but the share drive ID is critical. I would suggest preparing a document to copy and paste all the information you will need as you run through the script.
+
+```assembly
+creating reunion rclone union config
+
+Remote config
+--------------------
+[reunion]
+type = union
+upstreams = my_nottv: my_notmovies: my_notmusic:
+--------------------
+```
+
+The configuration for the union remote is created and all that is left is to build the service files and start the mounts.
+
+```assembly
+Preparing shmount service
+Created symlink /etc/systemd/system/default.target.wants/shmount.service → /etc/systemd/system/shmount.service.
+starting the reunion service.
+
+reunion mounts completed
+```
