@@ -104,17 +104,17 @@ The latest version of rclone rclone v1.55.1 is already installed.
 
 Rclone will be installed or updated with the branch you selected, in this example the latest stable version of rclone was already up to date.
 
-The script calls the official installation script from https://rclone.org/install/ - **you may wish to review this prior to installation**, some people may be happy to take the risk of a curled script.
+The script calls the official installation script from <https://rclone.org/install/> - **you may wish to review this prior to installation**, some people may be happy to take the risk of a curled script.
 
 STABLE
 
-```
+```shell
 curl https://rclone.org/install.sh | sudo bash
 ```
 
 BETA
 
-```
+```shell
 curl https://rclone.org/install.sh | sudo bash -s beta
 ```
 
@@ -191,7 +191,7 @@ lettuce build mounts
 
 After each drive is added you have the option to add another drive until you are finished.
 
-For each drive you will need to supply two pieces of information, the **name** you wish to use and the **drive ID**. The name doesnt matter too much you can call your drive Angus if you wish but the share drive ID is critical. I would suggest preparing a document to copy and paste all the information you will need as you run through the script.
+For each drive you will need to supply two pieces of information, the **name** you wish to use and the **drive ID**. The name doesnt matter too much you can call your drive Angus if you wish but the share drive ID is critical.
 
 ```assembly
 creating reunion rclone union config
@@ -212,4 +212,27 @@ Created symlink /etc/systemd/system/default.target.wants/shmount.service → /et
 starting the reunion service.
 
 reunion mounts completed
+```
+
+I would suggest preparing a document to copy and paste all the information you will need as you run through the script. An example might be:-
+
+```assembly
+# service accounts
+# path
+/opt/sa/mounts
+# file
+000001.json
+
+# Mount Name:
+reunion
+
+# share drives
+# name               ID
+my_nottv             0A1vvvvvvvvvvvvUk9PVA
+my_notmovies         0A1wwwwwwwwwwwwUk9PVA
+my_misc              0A1xxxxxxxxxxxxUk9PVA
+my_notebooks         0A1yyyyyyyyyyyyUk9PVA
+my_notaudiobooks     0A1zzzzzzzzzzzzUk9PVA
+
+
 ```

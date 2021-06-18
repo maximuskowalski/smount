@@ -2,3 +2,5 @@
 *.count
 **/.vscode
 *.set
+functiontest.sh
+maxnotes.md

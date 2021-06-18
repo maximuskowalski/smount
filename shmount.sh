@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -euo pipefail
+set -Eeuo pipefail
 # set -xv
 # IFS=$'\n\t'
 
@@ -18,24 +18,22 @@ RCUNAME=               # The name for this rclone union and mount directory
 MNTPNT=/mnt/${RCUNAME} #
 STRUNION=              # The union upstream string (accumulates during drive additions)
 
+# MergerFS var
+STRMERGER= # The union upstream string (accumulates during drive additions)
+
 # MOUNT VARS
-VFSCACHESIZE=200G   # Max size for VFS cache
-RCLONE_RC_PORT=5575 # Port for VFS RC
+VFSCACHESIZE=100G   # Max size for VFS cache
+RCLONE_RC_PORT=5575 # Port for VFS RC ( will be checked with "sudo lsof -i:5575" )
 
 # installs
 RCI=true  # Install or update Rclone?
 RCB=false # Rclone Beta installed or updated?
 
-# Unused - to be confirmed
-# MERGERFS=false
-# CROP=false
-# SAROTATE=false
+# facts
 
-# To use with crop and SARotatate (universal for simplicity?)
-# SAPATH=/opt/sa/mounts   # The path to service account files
-# TO ADD SAROTATE - CROP - MERGER - RCLONE
-# Do we bother to ask for mode for different style mounts?
-# Do we check for RO RW options?
+NOW=$(date)
+FREESPACE=$(df -h --output=avail /home/"$USER")
+
 #
 #________ FUNCTIONS
 
@@ -112,10 +110,15 @@ universals() {
     echo "Please enter an existing service account filename, for example 123.json :"
     read -r SAFILENAME
     SAFILE="${SAPATH}/${SAFILENAME}"
+    echo "--------------------"
     echo "Please enter name to use for rclone union mount, eg reunion."
     read -r RCUNAME
     MNTPNT="/mnt/${RCUNAME}"
-    echo "Rclone mount will use vfs-cache-mode full, and use 200GB, do you want to change max cache size?"
+    echo "--------------------"
+    echo "You currently have ${FREESPACE} free,"
+    echo "DO NOT use all of this for cache."
+    echo "--------------------"
+    echo "Rclone mount will use vfs-cache-mode full, and use 100GB, do you want to change max cache size?"
     select yn in "Yes" "No"; do
         case $yn in
         Yes)
@@ -124,7 +127,7 @@ universals() {
             break
             ;;
         No)
-            VFSCACHESIZE=200G
+            VFSCACHESIZE=100G
             break
             ;;
         esac
@@ -164,6 +167,7 @@ arewedone() {
 driveconfig() {
     STRUNION="${STRUNION}${SDNAME}: "
     DRVLIST="${DRVLIST}${SDNAME} "
+    STRMERGER="${STRMERGER}${SDNAME}: "
     sdrmconfig
 }
 
@@ -180,7 +184,10 @@ sdrmconfig() {
 
 # rclone union config entry function
 rcunionconfig() {
-    echo creating "${RCUNAME}" rclone union config
+    echo creating "${RCUNAME}" rclone union config with default policy options.
+    echo "ACTION:  epall"
+    echo "CREATE:  epmfs"
+    echo "SEARCH:  ff"
     rclone config create "${RCUNAME}" union upstreams "${STRUNION}"
 }
 
@@ -198,6 +205,17 @@ carryon() {
 mkmounce() {
     sudo mkdir -p "${MNTPNT}" && sudo chown "${USER}":"${USER}" "${MNTPNT}"
     mkdir -p /home/"${USER}"/logs && touch /home/"${USER}"/logs/shmount.log
+}
+
+checkport() {
+    echo "checking if port ${RCLONE_RC_PORT} is already in use"
+    if [[ $(sudo lsof -i:"${RCLONE_RC_PORT}") != *localhost* ]]; then
+        echo "port ${RCLONE_RC_PORT} is available and will be used"
+    else
+        RCLONE_RC_PORT=$((${RCLONE_RC_PORT} + 1))
+        echo "setting port to ${RCLONE_RC_PORT}"
+        checkport
+    fi
 }
 
 # servicemaker
@@ -265,6 +283,7 @@ enabler() {
 rooter
 rcloneinstall
 universals
+echo "--------------------"
 echo "User is:          ${USER}"
 echo "SA Path:          ${SAPATH}"
 echo "SA file:          ${SAFILE}"
@@ -272,15 +291,19 @@ echo "Cache size:       ${VFSCACHESIZE}"
 echo "Mount Name:       ${RCUNAME}"
 echo "Mount Point:      ${MNTPNT}"
 echo "Continue with installation?"
+echo "--------------------"
 carryon
 mkmounce
 rclonecheck
 fusebox
 driveadd
 echo "Drives added:   ${DRVLIST}"
+echo "--------------------"
 sleep 3
 rcunionconfig
 sleep 3
+checkport
+echo "--------------------"
 echo "Preparing shmount service"
 sysdmaker
 enabler
@@ -288,4 +311,11 @@ sudo systemctl daemon-reload
 echo "starting the ${RCUNAME} service, be patient. If you have a big one this might take a while."
 sudo systemctl start shmount.service
 # nohup sh sudo systemctl start shmount.service &>/dev/null &
-echo "${RCUNAME} mounts completed"
+echo "--------------------"
+echo "${RCUNAME} rclone union mount smounted"
+echo "--------------------"
+echo "--------------------"
+echo "/etc/systemd/system/mergerfs.service can be edited to include ${RCUNAME} eg:-"
+echo "  /mnt/local=RW:/mnt/remote=NC:/mnt/${RCUNAME}:NC /mnt/unionfs"
+echo "--------------------"
+echo "please consider reporting any issues"
