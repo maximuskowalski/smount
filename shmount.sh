@@ -256,7 +256,7 @@ ExecStart=/usr/bin/rclone mount \\
           --vfs-cache-max-size=${VFSCACHESIZE} \\
           --timeout=10m \\
           --drive-skip-gdocs \\
-          --drive-pacer-min-sleep=1ms \\
+          --drive-pacer-min-sleep=10ms \\
           --umask=002 \\
           --log-file=/home/${USER}/logs/shmount.log \\
           -v \\
