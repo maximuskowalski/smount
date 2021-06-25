@@ -1,43 +1,28 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
-# set -xv
-# IFS=$'\n\t'
+IFS=$'\n\t'
 
-#________ INTERACTIVE VARS
+#________ VARS DO NOT EDIT
 
-# Share Drives
-SDNAME=                        # The name for this mount and rclone config entry
-SDID=XXX                       # The share drive ID for this mount
-SAFILENAME=                    # 123.json. The initial service account file for this mount.
-SAPATH=                        # /opt/sa/mounts
-SAFILE=${SAPATH}/${SAFILENAME} #
-DRVLIST=                       # List of drives added to report back during interactive testing.
-
-# Rclone UNION
-RCUNAME=               # The name for this rclone union and mount directory
+SDNAME=                # a share drive rclone config entry
+SDID=                  # a share drive ID
+SAPATH=                # service account path "/opt/sa/mounts"
+DRVLIST=               # list of drives configured
+RCUNAME=               # name for rclone union config entry
+STRUNION=              # union upstream string (accumulates during drive additions)
+VFSCACHESIZE=          # maximum size for VFS cache
+STRMERGER=             # merger string
 MNTPNT=/mnt/${RCUNAME} #
-STRUNION=              # The union upstream string (accumulates during drive additions)
-
-# MergerFS var
-STRMERGER= # The union upstream string (accumulates during drive additions)
-
-# MOUNT VARS
-VFSCACHESIZE=100G   # Max size for VFS cache
-RCLONE_RC_PORT=5575 # Port for VFS RC ( will be checked with "sudo lsof -i:5575" )
-
-# installs
-RCI=true  # Install or update Rclone?
-RCB=false # Rclone Beta installed or updated?
-
-# facts
-
+RCLONE_RC_PORT=5575    # initial port for VFS
+RCI=true               # install or update Rclone?
+RCB=false              # rclone beta?
+CBI=false              # cloudbox install?
 NOW=$(date)
 FREESPACE=$(df -h --output=avail /home/"$USER")
+RECSPACE=$(("${FREESPACE//[^0-9]/}" * 80 / 100))
 
-#
 #________ FUNCTIONS
 
-# Check for sudo runner
 rooter() {
     if [ "$(whoami)" = root ]; then
         echo "Running as root or with sudo is not supported. Exiting."
@@ -45,7 +30,21 @@ rooter() {
     fi
 }
 
-## RCLONE
+cloudboxer() {
+    read -r -p "Is this a cloudbox install?  [Y/N] : " i
+    case $i in
+    [yY])
+        echo -e "mergerfs content line will be displayed after smounting has occured"
+        CBI="true"
+        # readmergerfs
+        ;;
+    [nN])
+        echo -e "thank you"
+        RCI="false"
+        ;;
+    esac
+}
+
 rcloneinstall() {
     read -r -p "Would you like to install or update rclone?  [Y/N] : " i
     case $i in
@@ -57,7 +56,6 @@ rcloneinstall() {
     [nN])
         echo -e "fine"
         RCI="false"
-        # return 0
         ;;
     *)
         echo "Invalid Option"
@@ -83,7 +81,6 @@ rclonebetaq() {
         No)
             RCI="false"
             break
-            #return 0
             ;;
         esac
     done
@@ -97,52 +94,42 @@ rclonecheck() {
 rclonebaker() {
     if [ $RCB = true ]; then
         echo "Installing rclone beta"
-        curl https://rclone.org/install.sh | sudo bash -s beta || :
+        curl https://rclone.org/install.sh | sudo bash -s beta &>/dev/null || :
+        echo "rclone beta installed"
     else
         echo "Installing rclone stable"
-        curl https://rclone.org/install.sh | sudo bash || :
+        curl https://rclone.org/install.sh | sudo bash &>/dev/null || :
+        echo "rclone stable installed"
     fi
 }
 
 universals() {
+    echo
     echo "Please enter service account file path, for example /opt/sa/mounts :"
     read -r SAPATH
-    echo "Please enter an existing service account filename, for example 123.json :"
-    read -r SAFILENAME
-    SAFILE="${SAPATH}/${SAFILENAME}"
-    echo "--------------------"
+    echo
     echo "Please enter name to use for rclone union mount, eg reunion."
     read -r RCUNAME
     MNTPNT="/mnt/${RCUNAME}"
-    echo "--------------------"
-    echo "You currently have ${FREESPACE} free,"
+    echo
+    echo "You currently have ${FREESPACE},"
     echo "DO NOT use all of this for cache."
-    echo "--------------------"
-    echo "Rclone mount will use vfs-cache-mode full, and use 100GB, do you want to change max cache size?"
-    select yn in "Yes" "No"; do
-        case $yn in
-        Yes)
-            echo "Please enter cache max size +G (ex 50G)"
-            read -r VFSCACHESIZE
-            break
-            ;;
-        No)
-            VFSCACHESIZE=100G
-            break
-            ;;
-        esac
-    done
-
+    echo Suggest using no more than "${RECSPACE}"G
+    echo
+    echo "Please enter cache max size +G (ex 50G)"
+    read -r VFSCACHESIZE
+    echo
 }
 
 driveadd() {
-    echo "Please enter Share Drive Name :"
+    echo
+    echo "Please enter a share drive name :"
     read -r SDNAME
+    echo
     echo "Please enter ""${SDNAME}"" Drive ID, for example 0A1xxxxxxxxxUk9PVA :"
     read -r "SDID"
-    # add this drive to rclone config and set the union var
+    SAFILE="$(shuf -n1 -e "${SAPATH}"/*.json)"
     driveconfig
-    # check for next drive
     arewedone
 }
 
@@ -151,6 +138,7 @@ arewedone() {
     case $i in
     [yY])
         echo -e "adding more drives"
+        echo
         driveadd
         ;;
     [nN])
@@ -172,22 +160,23 @@ driveconfig() {
 }
 
 fusebox() {
-    # check and fix fuse.conf
+    # check and fix fuse.conf if needed
     sudo sed -i -e "s/\#user_allow_other/user_allow_other/" "/etc/fuse.conf" || :
 }
 
-# rclone sharedrive config entry function
 sdrmconfig() {
+    echo
     echo creating rclone config for "${SDNAME}" with ID "${SDID}"
     rclone config create "${SDNAME}" drive scope drive server_side_across_configs true team_drive "$SDID" service_account_file "${SAFILE}"
+    echo
 }
 
-# rclone union config entry function
 rcunionconfig() {
     echo creating "${RCUNAME}" rclone union config with default policy options.
     echo "ACTION:  epall"
     echo "CREATE:  epmfs"
     echo "SEARCH:  ff"
+    echo
     rclone config create "${RCUNAME}" union upstreams "${STRUNION}"
 }
 
@@ -201,10 +190,9 @@ carryon() {
 
 }
 
-# mountpoints
 mkmounce() {
     sudo mkdir -p "${MNTPNT}" && sudo chown "${USER}":"${USER}" "${MNTPNT}"
-    mkdir -p /home/"${USER}"/logs && touch /home/"${USER}"/logs/shmount.log
+    mkdir -p /home/"${USER}"/logs && touch /home/"${USER}"/logs/smount.log
 }
 
 checkport() {
@@ -212,18 +200,17 @@ checkport() {
     if [[ $(sudo lsof -i:"${RCLONE_RC_PORT}") != *localhost* ]]; then
         echo "port ${RCLONE_RC_PORT} is available and will be used"
     else
-        RCLONE_RC_PORT=$((${RCLONE_RC_PORT} + 1))
+        RCLONE_RC_PORT=$((RCLONE_RC_PORT + 1))
         echo "setting port to ${RCLONE_RC_PORT}"
         checkport
     fi
 }
 
-# servicemaker
 sysdmaker() {
-    sudo bash -c 'cat > /etc/systemd/system/shmount.service' <<EOF
-# /etc/systemd/system/shmount.service
+    sudo bash -c 'cat > /etc/systemd/system/smount.service' <<EOF
+# /etc/systemd/system/smount.service
 [Unit]
-Description=shmount RCUnion Mount
+Description=smount RCUnion Mount
 After=network-online.target
 
 [Service]
@@ -258,7 +245,7 @@ ExecStart=/usr/bin/rclone mount \\
           --drive-skip-gdocs \\
           --drive-pacer-min-sleep=10ms \\
           --umask=002 \\
-          --log-file=/home/${USER}/logs/shmount.log \\
+          --log-file=/home/${USER}/logs/smount.log \\
           -v \\
           ${RCUNAME}: ${MNTPNT}
 
@@ -275,18 +262,31 @@ EOF
 }
 
 enabler() {
-    sudo systemctl enable shmount.service
+    sudo systemctl enable smount.service
+}
+
+cloudboxmsg() {
+    if [ $CBI = true ]; then
+        echo "--------------------"
+        echo "in cloudbox installations the union can be included in mergerfs directory"
+        echo "/etc/systemd/system/mergerfs.service can be edited to include ${RCUNAME} eg:-"
+        echo "  /mnt/local=RW:/mnt/remote=NC:/mnt/${RCUNAME}:NC /mnt/unionfs"
+        echo "--------------------"
+        echo
+    else
+        echo
+    fi
 }
 
 #________ SET LIST
 
 rooter
+echo
 rcloneinstall
 universals
 echo "--------------------"
 echo "User is:          ${USER}"
 echo "SA Path:          ${SAPATH}"
-echo "SA file:          ${SAFILE}"
 echo "Cache size:       ${VFSCACHESIZE}"
 echo "Mount Name:       ${RCUNAME}"
 echo "Mount Point:      ${MNTPNT}"
@@ -294,28 +294,34 @@ echo "Continue with installation?"
 echo "--------------------"
 carryon
 mkmounce
+echo
 rclonecheck
+echo
 fusebox
+echo "add your first drive"
 driveadd
+echo
 echo "Drives added:   ${DRVLIST}"
-echo "--------------------"
-sleep 3
+echo
 rcunionconfig
-sleep 3
+sleep 1
+echo
+cloudboxer
+echo
 checkport
-echo "--------------------"
-echo "Preparing shmount service"
+echo
+echo "Preparing smount service"
 sysdmaker
 enabler
 sudo systemctl daemon-reload
+echo
 echo "starting the ${RCUNAME} service, be patient. If you have a big one this might take a while."
-sudo systemctl start shmount.service
-# nohup sh sudo systemctl start shmount.service &>/dev/null &
-echo "--------------------"
-echo "${RCUNAME} rclone union mount smounted"
-echo "--------------------"
-echo "--------------------"
-echo "/etc/systemd/system/mergerfs.service can be edited to include ${RCUNAME} eg:-"
-echo "  /mnt/local=RW:/mnt/remote=NC:/mnt/${RCUNAME}:NC /mnt/unionfs"
-echo "--------------------"
+sudo systemctl start smount.service
+# nohup sh sudo systemctl start smount.service &>/dev/null &
+echo
+cloudboxmsg
+echo "${RCUNAME} smount smounty smounted"
+echo
+echo 'ᕙ(⇀‸↼‶)ᕗ'
+echo
 echo "please consider reporting any issues"
