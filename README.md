@@ -88,9 +88,9 @@ Continue with installation?
 #? 1
 ```
 
-Enter the universal options that will apply to the rclone union and all upstream drives we configure as part of it. Once all these are entered you will have a chance to check details before going ahead. If you have made a mistake you can choose option **(2)** and exit the script at this point to try again.
+Enter the universal options that will apply to the rclone union and all upstream drives we configure as part of it. Once these are entered you will have a chance to check details before going ahead. If you have made a mistake you can choose option **(2)** and exit the script at this point to try again.
 
-Using vfs-cache-mode full, whatever you choose for your maximum cache size **you will need to have the free space for**. A full drive is no fun so be careful, be sure. In this version of the script your cache will go to the default cache location with your user home directory. I would suggest leaving a minimum of 50GB free. I will build in a fail safe check at some point but for now this is on you. Currently free space will be checked and a recomendation of 80% of this free space will be suggested as a maximum value.
+Using vfs-cache-mode full, whatever you choose for your maximum cache size **you will need to have the free space for**. A full drive is no fun so be careful, be sure. Your cache will go to the default cache location within your user home directory. I would suggest leaving a minimum of 50GB free. I will build in a fail safe check at some point but for now this is on you. Currently free space will be checked and a recomendation of 80% of this free space will be suggested as a maximum value.
 
 ```assembly
 Installing rclone stable
@@ -116,7 +116,7 @@ BETA
 curl https://rclone.org/install.sh | sudo bash -s beta
 ```
 
-The installer won't re-download if it is not needed.
+The installer will not re-download rclone if it is already up to date.
 
 Next we will be configuring all the drives we wish to be part of the union.
 
@@ -191,10 +191,10 @@ Drives added: my_nottv my_notmovies my_notmusic
 
 After each drive is added you have the option to add another drive until you are finished.
 
-For each drive you will need to supply two pieces of information, the **name** you wish to use and the **drive ID**. The name doesnt matter too much you can call your drive Angus if you wish but the share drive ID is critical.
+For each drive you will need to supply two pieces of information, the **name** you wish to use and the **drive ID**. The name doesnt matter too much, you can call your drive Angus if you wish but the share drive ID is critical.
 
 ```assembly
-creating reunion rclone union config with default policy options.
+creating reunion rclone union config with the default policy options.
 ACTION:  epall
 CREATE:  epmfs
 SEARCH:  ff
@@ -207,7 +207,7 @@ upstreams = my_nottv: my_notmovies: my_notmusic:
 --------------------
 ```
 
-The configuration for the union remote is created and all that is really left is to build the service files and start the mounts. An RC port will be selected for you finding the first unused port equal to or greater than 5575.
+The configuration for the union remote is created and all that is really left is to build the service files and start the mounts. An RC port will be selected for you by finding the first unused port equal to or greater than 5575.
 
 ```assembly
 Is this a cloudbox install?  [Y/N] : y
