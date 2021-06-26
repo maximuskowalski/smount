@@ -164,7 +164,7 @@ universals() {
     echo "${BYELLOW}DO NOT use all of this for cache."
     echo "${BYELLOW}""${BOLD}"Suggest using no more than "${RED}""${RECSPACE}"G "${RESET}"
     echo
-    echo ${YELLOW}"Please enter cache max size +G (ex ${RESET}50G${YELLOW})"${RESET}
+    echo "${YELLOW}""Please enter cache max size +G (ex ${RESET}50G${YELLOW})""${RESET}"
     read -r VFSCACHESIZE
     echo
 }
