@@ -40,29 +40,36 @@ rooter() {
     fi
 }
 
+# TODO: add options for mergerfs edit and / or replace "remote"
 cloudboxer() {
+    echo
     read -r -p "${YELLOW}Is this a cloudbox install?  [Y/N] :${RESET}" i
     case $i in
     [yY])
         echo -e "${YELLOW}mergerfs content line will be displayed after smounting has occured"
+        echo
         CBI="true"
-        # readmergerfs
+        # TODO: readmergerfs line
         ;;
     [nN])
         echo -e "${YELLOW}thank you"
+        echo
         RCI="false"
         ;;
     esac
 }
 
+# TODO: consider forcing install if beta detected
 betachek() {
     if
         rclone --version 2>>errors | head -n 1 | grep -q 'beta'
     then
         echo you have "${VERSION}" installed
         echo
-        echo "${YELLOW}this script will not work with rclone beta"
-        echo "select beta install to have smount"
+        echo "${YELLOW}this script will not configure rclone"
+        echo "properly with the current rclone beta"
+        echo "if you wish to use beta, or have beta installed"
+        echo "please select rclone beta install to have smount"
         echo "temporarily install rclone stable to complete"
         echo "the config process and update to beta when done"
         echo
@@ -81,7 +88,7 @@ rcloneinstall() {
         rclonebetaq
         ;;
     [nN])
-        echo -e "${YELLOW}fine"
+        echo -e "${YELLOW}no clone for you"
         RCI="false"
         ;;
     *)
@@ -98,12 +105,10 @@ rclonebetaq() {
         case $yn in
         Beta)
             RCB="true"
-            RCI="true"
             break
             ;;
         Stable)
             RCB="false"
-            RCI="true"
             break
             ;;
         No)
@@ -118,13 +123,10 @@ rclonecheck() {
     ([ $RCI = true ] && rclonesetup) || :
 }
 
-rclonecheckmate() {
-    ([ $RCB = true ] && rclonebaker) || :
-}
-
 rclonesetup() {
     if [ $RCB = true ]; then
-        echo "${YELLOW}Installing rclone stable, rclone beta will be installed after config${GREEN}"
+        echo "${YELLOW}Installing rclone stable, rclone beta"
+        echo "will be installed after config${GREEN}"
         curl https://rclone.org/install.sh | sudo bash || :
         clear
         echo "${YELLOW}rclone stable installed for configuration bug"
@@ -139,6 +141,10 @@ rclonesetup() {
         echo "${VERSION}"
         echo
     fi
+}
+
+rclonecheckmate() {
+    ([ $RCB = true ] && rclonebaker) || :
 }
 
 rclonebaker() {
@@ -207,11 +213,14 @@ driveconfig() {
     sdrmconfig
 }
 
+# check and fix fuse.conf if needed
 fusebox() {
-    # check and fix fuse.conf if needed
+    echo
     sudo sed -i -e "s/\#user_allow_other/user_allow_other/" "/etc/fuse.conf" || :
 }
 
+# rclone beta bug - no drive ID created, use only stable
+# maybe force stable condition for rclone install dodgers
 sdrmconfig() {
     echo
     echo "${YELLOW}"creating rclone config for "${SDNAME}" with ID "${SDID}" "${RESET}"
@@ -221,6 +230,7 @@ sdrmconfig() {
 }
 
 rcunionconfig() {
+    echo
     echo "${YELLOW}"creating "${RCUNAME}" rclone union config with default policy options.
     echo "ACTION:  epall"
     echo "CREATE:  epmfs"
@@ -243,12 +253,16 @@ carryon() {
 mkmounce() {
     sudo mkdir -p "${MNTPNT}" && sudo chown "${USER}":"${USER}" "${MNTPNT}"
     mkdir -p /home/"${USER}"/logs && touch /home/"${USER}"/logs/smount.log
+    echo
 }
 
 checkport() {
     echo "${GREEN}checking if port ${RCLONE_RC_PORT} is already in use"
     if [[ $(sudo lsof -i:"${RCLONE_RC_PORT}") != *localhost* ]]; then
         echo "${YELLOW}port ${RCLONE_RC_PORT} is available and will be used"
+        echo
+        echo "${YELLOW}Preparing smount service"
+        echo
     else
         RCLONE_RC_PORT=$((RCLONE_RC_PORT + 1))
         echo "${BGREEN}setting port to ${RCLONE_RC_PORT}"
@@ -315,6 +329,15 @@ enabler() {
     sudo systemctl enable smount.service
 }
 
+firehol() {
+    enabler
+    sudo systemctl daemon-reload
+    echo
+    echo "${YELLOW}starting the ${RCUNAME} service, be patient. If you have a big one this might take a while."
+    sudo systemctl start smount.service
+    echo
+}
+
 cloudboxmsg() {
     if [ $CBI = true ]; then
         echo "${GREEN}--------------------"
@@ -328,8 +351,17 @@ cloudboxmsg() {
     fi
 }
 
-exiting() {
+muhfacts() {
+    echo "${YELLOW}--------------------"
+    echo "${RESET}User is:          ${YELLOW}${USER}"
+    echo "${RESET}SA Path:          ${YELLOW}${SAPATH}"
+    echo "${RESET}Cache size:       ${YELLOW}${VFSCACHESIZE}"
+    echo "${RESET}Mount Name:       ${YELLOW}${RCUNAME}"
+    echo "${RESET}Mount Point:      ${YELLOW}${MNTPNT}"
+    echo "--------------------"
+}
 
+exiting() {
     echo "${YELLOW}"
     echo "    **************************"
     echo "    * ---------------------- *"
@@ -340,6 +372,14 @@ exiting() {
     echo
 }
 
+smounted() {
+    echo "  ${BOLD}${YELLOW}${RCUNAME} smount smounty smounted"
+    echo
+    echo '           ᕙ(⇀‸↼‶)ᕗ'
+    echo
+    echo "  ${RESET}please consider reporting any issues"
+}
+
 #________ SET LIST
 
 clear
@@ -347,45 +387,22 @@ echo
 rooter
 betachek
 universals
-echo "${YELLOW}--------------------"
-echo "${RESET}User is:          ${YELLOW}${USER}"
-echo "${RESET}SA Path:          ${YELLOW}${SAPATH}"
-echo "${RESET}Cache size:       ${YELLOW}${VFSCACHESIZE}"
-echo "${RESET}Mount Name:       ${YELLOW}${RCUNAME}"
-echo "${RESET}Mount Point:      ${YELLOW}${MNTPNT}"
-echo "--------------------"
+muhfacts
 carryon
 mkmounce
-echo
 rclonecheck
-echo
 fusebox
 echo "${YELLOW}add your first drive"
 driveadd
 echo
 echo "${RESET}Drives added:   ${YELLOW}${DRVLIST}"
-echo
 rcunionconfig
 sleep 1
 rclonecheckmate
-echo
 cloudboxer
-echo
 checkport
-echo
-echo "${YELLOW}Preparing smount service"
 sysdmaker
-enabler
-sudo systemctl daemon-reload
-echo
-echo "${YELLOW}starting the ${RCUNAME} service, be patient. If you have a big one this might take a while."
-sudo systemctl start smount.service
-# nohup sh sudo systemctl start smount.service &>/dev/null &
-echo
+firehol
 cloudboxmsg
 exiting
-echo "  ${BOLD}${YELLOW}${RCUNAME} smount smounty smounted"
-echo
-echo '           ᕙ(⇀‸↼‶)ᕗ'
-echo
-echo "  ${RESET}please consider reporting any issues"
+smounted
