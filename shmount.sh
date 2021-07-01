@@ -16,6 +16,8 @@ RCLONE_RC_PORT=5575 # initial port for VFS
 RCI=true            # install or update Rclone?
 RCB=false           # rclone beta?
 CBI=false           # cloudbox install?
+LGLVL=INFO          # Log level for mount logging
+LGKP=7              # Number of days logs to keep
 
 MNTPNT=/mnt/${RCUNAME}
 FREESPACE=$(df -h --output=avail /home/"$USER")
@@ -173,6 +175,45 @@ universals() {
     echo "${YELLOW}""Please enter cache max size +G (ex ${RESET}50G${YELLOW})""${RESET}"
     read -r VFSCACHESIZE
     echo
+    logginglevel
+    echo
+    echo "${YELLOW}""If you have set log level to debug this can add up quickly"
+    echo "How many days worth of mount logs would you like to keep?"
+    echo "enter a number, ex ${RESET}10${YELLOW})""${RESET}"
+    read -r LGKP
+    echo
+}
+
+logginglevel() {
+    echo "Logging levels are:-"
+    echo
+    echo "${RESET}""DEBUG  - ""${YELLOW}""lots of debug info. larger log files"
+    echo "${RESET}""INFO   - ""${YELLOW}""RECOMMENDED information and events."
+    echo "${RESET}""NOTICE - ""${YELLOW}""warnings and significant events."
+    echo "${RESET}""ERROR  - ""${YELLOW}""only outputs error messages. smallest log files.""${RESET}"
+    echo
+    echo 'Choose your logging level: '
+    # PS3='Choose your logging level: '
+    select i in "DEBUG" "INFO" "NOTICE" "ERROR"; do
+        case $i in
+        "DEBUG")
+            LGLVL="DEBUG"
+            break
+            ;;
+        "INFO")
+            LGLVL="INFO"
+            break
+            ;;
+        "NOTICE")
+            LGLVL="NOTICE"
+            break
+            ;;
+        "ERROR")
+            LGLVL="ERROR"
+            break
+            ;;
+        esac
+    done
 }
 
 driveadd() {
@@ -247,13 +288,26 @@ carryon() {
         Exit) exit 0 ;;
         esac
     done
-
 }
 
 mkmounce() {
     sudo mkdir -p "${MNTPNT}" && sudo chown "${USER}":"${USER}" "${MNTPNT}"
     mkdir -p /home/"${USER}"/logs && touch /home/"${USER}"/logs/smount.log
     echo
+}
+
+logsplitter() {
+    sudo bash -c 'cat > /etc/logrotate.d/smountlog' <<EOF
+/home/${USER}/logs/smount.log {
+    daily
+    copytruncate
+    create 660 ${USER} ${USER}
+    dateext
+    extension log
+    rotate ${LGKP}
+    delaycompress
+}
+EOF
 }
 
 checkport() {
@@ -309,8 +363,8 @@ ExecStart=/usr/bin/rclone mount \\
           --drive-skip-gdocs \\
           --drive-pacer-min-sleep=10ms \\
           --umask=002 \\
+          --log-level=${LGLVL} \\
           --log-file=/home/${USER}/logs/smount.log \\
-          -v \\
           ${RCUNAME}: ${MNTPNT}
 
 ExecStop=/bin/fusermount -uz ${MNTPNT}
@@ -329,12 +383,14 @@ enabler() {
     sudo systemctl enable smount.service
 }
 
+# change start to restart to test if existing mount restarts correctly
+# perhaps check for existing file first instead of restart
 firehol() {
     enabler
     sudo systemctl daemon-reload
     echo
     echo "${YELLOW}starting the ${RCUNAME} service, be patient. If you have a big one this might take a while."
-    sudo systemctl start smount.service
+    sudo systemctl restart smount.service
     echo
 }
 
@@ -390,6 +446,7 @@ universals
 muhfacts
 carryon
 mkmounce
+logsplitter
 rclonecheck
 fusebox
 echo "${YELLOW}add your first drive"
