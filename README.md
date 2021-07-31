@@ -34,12 +34,18 @@ Probably the easiest way to explain is just to demonstrate.
 
 ## example use
 
-_Instructions for accessing script to come._ Git clone
+Get the file however you choose, for example:-
 
+Using wget to download, set as executable and run.
+
+```assembly
+wget https://raw.githubusercontent.com/maximuskowalski/smount/main/shmount.sh
+chmod +x shmount.sh
+```
 Run the script , answer the questions.
 
 ```assembly
-➜  smount git:(main) ✗ ./smount.sh
+./shmount.sh
 
 Would you like to install or update rclone? [Y/N] : y
 
