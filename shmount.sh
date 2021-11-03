@@ -4,11 +4,11 @@ IFS=$'\n\t'
 
 #________ VARS DO NOT EDIT
 
+SHMOUNT=smount      # this will be tname rcunion remote and systemd service
 SDNAME=             # a share drive rclone config entry
 SDID=               # a share drive ID
 SAPATH=             # service account path "/opt/sa/mounts"
 DRVLIST=            # list of drives configured
-RCUNAME=            # name for rclone union config entry
 STRUNION=           # union upstream string (accumulates during drive additions)
 VFSCACHESIZE=       # maximum size for VFS cache
 STRMERGER=          # merger string
@@ -18,11 +18,15 @@ RCB=false           # rclone beta?
 CBI=false           # cloudbox install?
 LGLVL=INFO          # Log level for mount logging
 LGKP=7              # Number of days logs to keep
+THIS_OS=            # OS
+SYSTEMD=            # Use systemd?
 
-MNTPNT=/mnt/${RCUNAME}
+MNTPNT=/mnt/${SHMOUNT}
 FREESPACE=$(df -h --output=avail /home/"$USER")
 RECSPACE=$(("${FREESPACE//[^0-9]/}" * 80 / 100))
 VERSION=$(rclone --version 2>>errors | head -n 1)
+
+#________ COLOURS
 
 BOLD="$(tput bold)"        # bold
 RESET="$(tput sgr0)"       # reset
@@ -35,10 +39,58 @@ BYELLOW="$(tput setaf 11)" # bright yellow
 
 #________ FUNCTIONS
 
+# check if script user is root
 rooter() {
-    if [ "$(whoami)" = root ]; then
+    if [ "$(id -u)" = 0 ]; then
         echo "${BRED} Running as root or with sudo is not supported. Exiting.${RESET}"
         exit
+    fi
+}
+
+# check compatible OS
+osdetection() {
+    if [ -f /etc/os-release ]; then
+        . /etc/os-release
+        THIS_OS=$ID_LIKE
+    elif type lsb_release >/dev/null 2>&1; then
+        THIS_OS=$(lsb_release -si)
+    elif [ -f /etc/lsb-release ]; then
+        . /etc/lsb-release
+        THIS_OS=$DISTRIB_ID
+    elif [ -f /etc/debian_version ]; then
+        THIS_OS=Debian
+    elif [ -f /etc/SuSe-release ]; then
+        THIS_OS=SuSE
+    elif [ -f /etc/redhat-release ]; then
+        THIS_OS=RedHat
+    else
+        # Fall back to uname.
+        THIS_OS=$(uname -s)
+    fi
+
+}
+
+systemd_detection() {
+    if [ -f /lib/systemd/system/systemd-resolved.service ]; then
+        SYSTEMD=true
+    else
+        SYSTEMD=false
+    fi
+}
+
+myball() {
+    if [ $SYSTEMD = false ]; then
+        echo "${BRED} Smount requires systemd. OS. not supported. Exiting.${RESET}"
+        exit
+    else
+        osdetection
+        if [[ "${THIS_OS}" != "arch" ]] || [ "${THIS_OS}" = "Debian" ] || [ "${THIS_OS}" = "Ubuntu" ]; then
+            echo "${THIS_OS} supported"
+        else
+            echo "${BRED} ${THIS_OS} has not been tested with smount but should work."
+            echo " Smounting will continue ${RESET}"
+            exit
+        fi
     fi
 }
 
@@ -161,12 +213,13 @@ rclonebaker() {
 
 universals() {
     echo
+    echo "${YELLOW}Please enter name to use for mount, and service"
+    echo "default is smount :${RESET}"
+    read -r SHMOUNT
+    MNTPNT="/mnt/${SHMOUNT}"
+    echo
     echo "${YELLOW}Please enter service account file path, for example /opt/sa/mounts :${RESET}"
     read -r SAPATH
-    echo
-    echo "${YELLOW}Please enter name to use for rclone union mount, eg reunion :${RESET}"
-    read -r RCUNAME
-    MNTPNT="/mnt/${RCUNAME}"
     echo
     echo "${BYELLOW}You currently have ${FREESPACE},"
     echo "${BYELLOW}DO NOT use all of this for cache."
@@ -216,6 +269,8 @@ logginglevel() {
     done
 }
 
+# TODO: make ID and NAME a paired input.  "SM_TV:0A1xxxxxxxxxUk9PVA"
+# TODO: make option to import list or file?
 driveadd() {
     echo
     echo "${YELLOW}Please enter a share drive name :${RESET}"
@@ -272,12 +327,12 @@ sdrmconfig() {
 
 rcunionconfig() {
     echo
-    echo "${YELLOW}"creating "${RCUNAME}" rclone union config with default policy options.
+    echo "${YELLOW}"creating "${SHMOUNT}" rclone union config with default policy options.
     echo "ACTION:  epall"
     echo "CREATE:  epmfs"
     echo "SEARCH:  ff"
     echo "${RESET}"
-    rclone config create "${RCUNAME}" union upstreams "${STRUNION}"
+    rclone config create "${SHMOUNT}" union upstreams "${STRUNION}"
 }
 
 carryon() {
@@ -292,23 +347,26 @@ carryon() {
 
 mkmounce() {
     sudo mkdir -p "${MNTPNT}" && sudo chown "${USER}":"${USER}" "${MNTPNT}"
-    mkdir -p /home/"${USER}"/logs && touch /home/"${USER}"/logs/smount.log
+    mkdir -p /home/"${USER}"/logs && touch /home/"${USER}"/logs/"${SHMOUNT}".log
     echo
 }
 
 logsplitter() {
-    sudo bash -c 'cat > /etc/logrotate.d/smountlog' <<EOF
-/home/${USER}/logs/smount.log {
+    sudo bash -c 'cat > /etc/logrotate.d/${SHMOUNT}log' <<EOF
+/home/${USER}/logs/"${SHMOUNT}".log {
     daily
     copytruncate
     create 660 ${USER} ${USER}
     dateext
+    size=+4096k
     extension log
     rotate ${LGKP}
     delaycompress
 }
 EOF
 }
+
+detect_system
 
 checkport() {
     echo "${GREEN}checking if port ${RCLONE_RC_PORT} is already in use"
@@ -325,10 +383,10 @@ checkport() {
 }
 
 sysdmaker() {
-    sudo bash -c 'cat > /etc/systemd/system/smount.service' <<EOF
-# /etc/systemd/system/smount.service
+    sudo bash -c 'cat > /etc/systemd/system/${SHMOUNT}.service' <<EOF
+# /etc/systemd/system/"${SHMOUNT}".service
 [Unit]
-Description=smount RCUnion Mount
+Description=${SHMOUNT} RCUnion Mount
 After=network-online.target
 
 [Service]
@@ -364,8 +422,8 @@ ExecStart=/usr/bin/rclone mount \\
           --drive-pacer-min-sleep=10ms \\
           --umask=002 \\
           --log-level=${LGLVL} \\
-          --log-file=/home/${USER}/logs/smount.log \\
-          ${RCUNAME}: ${MNTPNT}
+          --log-file=/home/${USER}/logs/${SHMOUNT}.log \\
+          ${SHMOUNT}: ${MNTPNT}
 
 ExecStop=/bin/fusermount -uz ${MNTPNT}
 ExecStartPost=/usr/bin/rclone rc vfs/refresh recursive=true --rc-addr localhost:${RCLONE_RC_PORT} _async=true
@@ -380,7 +438,7 @@ EOF
 }
 
 enabler() {
-    sudo systemctl enable smount.service
+    sudo systemctl enable "${SHMOUNT}".service
 }
 
 # change start to restart to test if existing mount restarts correctly
@@ -389,8 +447,8 @@ firehol() {
     enabler
     sudo systemctl daemon-reload
     echo
-    echo "${YELLOW}starting the ${RCUNAME} service, be patient. If you have a big one this might take a while."
-    sudo systemctl restart smount.service
+    echo "${YELLOW}starting the ${SHMOUNT} service, be patient. If you have a big one this might take a while."
+    sudo systemctl restart "${SHMOUNT}".service
     echo
 }
 
@@ -398,8 +456,8 @@ cloudboxmsg() {
     if [ $CBI = true ]; then
         echo "${GREEN}--------------------"
         echo "in cloudbox installations the union can be included in mergerfs directory"
-        echo "/etc/systemd/system/mergerfs.service can be edited to include ${RCUNAME} eg:-"
-        echo "${RESET}  /mnt/local=RW:/mnt/remote=NC:/mnt/${RCUNAME}:NC /mnt/unionfs"
+        echo "/etc/systemd/system/mergerfs.service can be edited to include ${SHMOUNT} eg:-"
+        echo "${RESET}  /mnt/local=RW:/mnt/remote=NC:/mnt/${SHMOUNT}:NC /mnt/unionfs"
         echo "${GREEN}--------------------"
         echo
     else
@@ -412,7 +470,7 @@ muhfacts() {
     echo "${RESET}User is:          ${YELLOW}${USER}"
     echo "${RESET}SA Path:          ${YELLOW}${SAPATH}"
     echo "${RESET}Cache size:       ${YELLOW}${VFSCACHESIZE}"
-    echo "${RESET}Mount Name:       ${YELLOW}${RCUNAME}"
+    echo "${RESET}Mount Name:       ${YELLOW}${SHMOUNT}"
     echo "${RESET}Mount Point:      ${YELLOW}${MNTPNT}"
     echo "--------------------"
 }
@@ -429,11 +487,12 @@ exiting() {
 }
 
 smounted() {
-    echo "  ${BOLD}${YELLOW}${RCUNAME} smount smounty smounted"
+    echo "  ${BOLD}${YELLOW}"
+    echo "          ${SHMOUNT}"
+    echo "     smount smounty smounted"
+    echo "    **************************"
     echo
-    echo '           ᕙ(⇀‸↼‶)ᕗ'
-    echo
-    echo "  ${RESET}please consider reporting any issues"
+    echo "  ${RESET}please report issues"
 }
 
 #________ SET LIST
@@ -441,8 +500,15 @@ smounted() {
 clear
 echo
 rooter
+systemd_detection
 betachek
+
+myball
+
 universals
+
+# check for existing smount service name and rclone entry to avoid overwriting
+
 muhfacts
 carryon
 mkmounce
@@ -462,4 +528,7 @@ sysdmaker
 firehol
 cloudboxmsg
 exiting
+
+# Back up vars to file?
+# echo "${SHMOUNT}" > /$PWD/${SHMOUNT}.txt
 smounted
