@@ -1,6 +1,8 @@
-# NEW DEFAUL BRANCH
+# NEW DEFAULT BRANCH
 
 ### WIKI is yet to be reworked, follow these instructions below only.
+### MASTER branch still exists.
+### DEV branch still exists.
 
 ## smount
 
